@@ -44,7 +44,7 @@ class WebDatabaseAdapter implements DBInterface {
             const newItem: any = { id: lastId };
 
             // Very naive parser for: INSERT INTO table (col1, col2) VALUES (?, ?)
-            const columnsMatch = sql.match(/\((.*?)\)/);
+            const columnsMatch = sql.match(/\(([\s\S]*?)\)/);
             if (columnsMatch) {
                 const columns = columnsMatch[1].split(',').map(c => c.trim());
                 columns.forEach((col, index) => {

@@ -83,8 +83,6 @@ export default function AdvisorScreen() {
         try {
             await generateMockData(50);
             alert('Generated 50 mock brews!');
-            await generateMockData(50);
-            alert('Generated 50 mock brews!');
             loadData();
         } catch (e) {
             alert('Error generating data: ' + e);
@@ -105,6 +103,19 @@ export default function AdvisorScreen() {
                         label="Generate 50 Mock Brews"
                         onPress={handleGenerateData}
                         variant="outline"
+                    />
+                    <Box height={10} />
+                    <Button
+                        label="Nuke Data (Clear All)"
+                        onPress={async () => {
+                            if (confirm('Are you sure? This will delete all data.')) {
+                                localStorage.clear();
+                                window.location.reload();
+                            }
+                        }}
+                        variant="outline"
+                        style={{ borderColor: theme.colors.error }}
+                        textStyle={{ color: theme.colors.error }}
                     />
                 </Box>
 

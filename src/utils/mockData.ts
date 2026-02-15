@@ -11,7 +11,7 @@ export const generateMockData = async (count: number = 50) => {
     // Ensure we have at least one coffee and grinder
     let coffees = await coffeeRepo.getAll();
     if (coffees.length === 0) {
-        await coffeeRepo.create({ name: 'Ethiopia Sidamo', roastery: 'The Barn', roastDate: new Date() });
+        await coffeeRepo.create({ name: 'Ethiopia Sidamo', roastery: 'The Barn', roastDate: new Date().toISOString().split('T')[0] });
         coffees = await coffeeRepo.getAll();
     }
 
@@ -23,6 +23,10 @@ export const generateMockData = async (count: number = 50) => {
 
     const coffeeId = coffees[0].id;
     const grinderId = grinders[0].id;
+
+    if (!coffeeId || !grinderId) {
+        throw new Error('Failed to get coffee or grinder ID for mock data generation');
+    }
 
     const baseRecipe = {
         doseIn: 18,

@@ -9,7 +9,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { databaseService } from '../src/domain/services/DatabaseService';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, View, Text } from 'react-native';
+import { ActivityIndicator, View, Text, Platform } from 'react-native';
 
 export default function RootLayout() {
     const colorScheme = useColorScheme();
@@ -51,19 +51,42 @@ export default function RootLayout() {
         <GestureHandlerRootView style={{ flex: 1 }}>
             <ThemeProvider theme={theme}>
                 <NavigationThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-                    <Stack
-                        screenOptions={{
-                            headerStyle: {
-                                backgroundColor: theme.colors.mainBackground,
-                            },
-                            headerTintColor: theme.colors.textPrimary,
-                            contentStyle: {
-                                backgroundColor: theme.colors.mainBackground,
-                            },
-                        }}
-                    >
-                        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                    </Stack>
+                    {/* Web Container Wrapper */}
+                    <View style={{ flex: 1, backgroundColor: Platform.OS === 'web' ? '#121212' : theme.colors.mainBackground, alignItems: 'center', justifyContent: 'center' }}>
+                        <View style={{
+                            flex: 1,
+                            width: '100%',
+                            maxWidth: Platform.OS === 'web' ? 500 : '100%', // Reduced width slightly for better proportion
+                            maxHeight: Platform.OS === 'web' ? '95%' : '100%', // Simulate phone height on large screens
+                            backgroundColor: theme.colors.mainBackground,
+                            borderRadius: Platform.OS === 'web' ? 20 : 0, // Rounded corners for "Phone" look
+                            overflow: 'hidden', // Clip content to rounded corners
+                            // Add shadow/border on web
+                            ...(Platform.OS === 'web' ? {
+                                borderWidth: 1,
+                                borderColor: '#333',
+                                shadowColor: '#000',
+                                shadowOffset: { width: 0, height: 10 },
+                                shadowOpacity: 0.5,
+                                shadowRadius: 20,
+                                paddingBottom: 0, // No extra padding for sleek look
+                            } : {})
+                        }}>
+                            <Stack
+                                screenOptions={{
+                                    headerStyle: {
+                                        backgroundColor: theme.colors.mainBackground,
+                                    },
+                                    headerTintColor: theme.colors.textPrimary,
+                                    contentStyle: {
+                                        backgroundColor: theme.colors.mainBackground,
+                                    },
+                                }}
+                            >
+                                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                            </Stack>
+                        </View>
+                    </View>
                     <StatusBar style="light" />
                 </NavigationThemeProvider>
             </ThemeProvider>

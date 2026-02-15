@@ -53,11 +53,11 @@ export const BodySelector: React.FC<BodySelectorProps> = ({ value, onChange }) =
                                 fontSize={16}
                                 color={isActive ? 'black' : 'textSecondary'}
                                 fontWeight="bold"
-                                style={{ transform: [{ rotate: '-90deg' }], width: 120, textAlign: 'center' }}
+                                textAlign="center"
                             >
                                 {zone.label}
                             </Text>
-                            <Box marginTop="l">
+                            <Box marginTop="s">
                                 {zone.descriptors.map((desc) => (
                                     <Text
                                         key={desc}
@@ -65,7 +65,7 @@ export const BodySelector: React.FC<BodySelectorProps> = ({ value, onChange }) =
                                         color={isActive ? 'black' : 'textSecondary'}
                                         fontSize={10}
                                         textAlign="center"
-                                        style={{ transform: [{ rotate: '-90deg' }], marginVertical: 2 }}
+                                        style={{ marginVertical: 1 }}
                                     >
                                         {desc}
                                     </Text>
@@ -75,6 +75,6 @@ export const BodySelector: React.FC<BodySelectorProps> = ({ value, onChange }) =
                     </Pressable>
                 );
             })}
-        </Box>
+        </Box >
     );
 };

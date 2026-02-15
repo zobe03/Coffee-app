@@ -39,6 +39,31 @@ export default function BrewLogScreen() {
     const [bitterness, setBitterness] = useState(5);
     const [tasteNotes, setTasteNotes] = useState<string[]>([]);
 
+    // Timer State
+    const [timerSeconds, setTimerSeconds] = useState(0);
+    const [isTimerRunning, setIsTimerRunning] = useState(false);
+
+    useEffect(() => {
+        let interval: NodeJS.Timeout;
+        if (isTimerRunning) {
+            interval = setInterval(() => {
+                setTimerSeconds(s => s + 0.1);
+            }, 100);
+        }
+        return () => clearInterval(interval);
+    }, [isTimerRunning]);
+
+    const handleStartTimer = () => setIsTimerRunning(true);
+    const handleStopTimer = () => {
+        setIsTimerRunning(false);
+        setTime(timerSeconds.toFixed(1));
+    };
+    const handleResetTimer = () => {
+        setIsTimerRunning(false);
+        setTimerSeconds(0);
+        setTime('0');
+    };
+
     useEffect(() => {
         const fetchData = async () => {
             setCoffees(await new CoffeeRepository().getAll());
@@ -140,6 +165,8 @@ export default function BrewLogScreen() {
                     />
                 </Box>
 
+
+
                 {/* Recipe */}
                 <Box marginBottom="l">
                     <Text variant="subheader" marginBottom="m">Recipe</Text>
@@ -152,6 +179,34 @@ export default function BrewLogScreen() {
                         <InputField label="Temp (°C)" value={temp} onChange={setTemp} keyboardType="decimal-pad" />
                     </Box>
                     <GrindSelector value={grindSetting} onChange={setGrindSetting} />
+                </Box>
+
+                {/* Built-in Timer */}
+                <Box marginBottom="l" backgroundColor="cardPrimaryBackground" padding="m" borderRadius={16} alignItems="center">
+                    <Text variant="caption" color="textSecondary" marginBottom="s" textTransform="uppercase" letterSpacing={1}>Shot Timer</Text>
+                    <Text variant="header" fontSize={48} fontWeight="900" style={{ fontVariant: ['tabular-nums'] }} marginBottom="m">
+                        {timerSeconds.toFixed(1)}s
+                    </Text>
+                    <Box flexDirection="row" gap="m">
+                        {!isTimerRunning ? (
+                            <TouchableOpacity onPress={handleStartTimer}>
+                                <Box backgroundColor="primary" paddingHorizontal="xl" paddingVertical="m" borderRadius={30}>
+                                    <Text variant="body" fontWeight="bold" color="white">Start</Text>
+                                </Box>
+                            </TouchableOpacity>
+                        ) : (
+                            <TouchableOpacity onPress={handleStopTimer}>
+                                <Box backgroundColor="error" paddingHorizontal="xl" paddingVertical="m" borderRadius={30}>
+                                    <Text variant="body" fontWeight="bold" color="white">Stop</Text>
+                                </Box>
+                            </TouchableOpacity>
+                        )}
+                        <TouchableOpacity onPress={handleResetTimer}>
+                            <Box backgroundColor="surface" paddingHorizontal="l" paddingVertical="m" borderRadius={30}>
+                                <Text variant="body" fontWeight="bold" color="textSecondary">Reset</Text>
+                            </Box>
+                        </TouchableOpacity>
+                    </Box>
                 </Box>
 
                 {/* Taste Profile */}

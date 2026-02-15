@@ -13,7 +13,7 @@ const WHEEL_DATA = [
     { label: 'FRUITY', color: '#D87093', sub: ['STONE FRUIT', 'BERRY', 'TROPICAL', 'CITRUS', 'DRIED FRUIT'] }, // Fruits - DarkRosa
     { label: 'CHOCOLATE', color: '#8B4513', sub: [] }, // Chocolate - Braun
     { label: 'NUTTY', color: '#DAA520', sub: [] }, // Nutty - Ockergelb
-    { label: 'SWEET', color: '#FFA500', sub: ['SYRUP', 'CARAMEL', 'MARSHMALLOW', 'CREAM', 'HONEY', 'VANILLA'] }, // Sweet - Orange
+    { label: 'SWEET', color: '#FFA500', sub: ['SYRUP', 'CARAMEL', 'CREAM', 'HONEY', 'VANILLA'] }, // Sweet - Orange
     { label: 'FLORAL', color: '#FFB6C1', sub: [] }, // Floral - Hellrosa
 ];
 
@@ -23,12 +23,25 @@ const CENTER = { x: RADIUS, y: RADIUS };
 
 export const TasteWheel: React.FC<TasteWheelProps> = ({ onNotesChange, selectedNotes }) => {
     const theme = useTheme();
+    const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
     const toggleNote = (note: string) => {
         if (selectedNotes.includes(note)) {
             onNotesChange(selectedNotes.filter(n => n !== note));
         } else {
             onNotesChange([...selectedNotes, note]);
+        }
+    };
+
+    const handleCategoryPress = (category: typeof WHEEL_DATA[0]) => {
+        if (category.sub.length === 0) {
+            toggleNote(category.label);
+        } else {
+            if (activeCategory === category.label) {
+                setActiveCategory(null);
+            } else {
+                setActiveCategory(category.label);
+            }
         }
     };
 
@@ -59,9 +72,6 @@ export const TasteWheel: React.FC<TasteWheelProps> = ({ onNotesChange, selectedN
     };
 
     // Render logic
-    let currentAngle = 0;
-    const totalWeight = WHEEL_DATA.reduce((acc, item) => acc + (item.sub.length || 1), 0); // basic weighting
-    // Actually, let's just split equally for main categories to simplify
     const anglePerCategory = 360 / WHEEL_DATA.length;
 
     return (
@@ -72,15 +82,23 @@ export const TasteWheel: React.FC<TasteWheelProps> = ({ onNotesChange, selectedN
                     const startAngle = index * anglePerCategory;
                     const endAngle = (index + 1) * anglePerCategory;
                     const isSelected = selectedNotes.includes(category.label);
+                    const isActive = activeCategory === category.label;
+                    const hasSubs = category.sub.length > 0;
+
+                    // If active and has subs, shrink main arc to make room
+                    const outerRadius = (isActive && hasSubs) ? RADIUS * 0.6 : RADIUS;
 
                     const midAngle = (startAngle + endAngle) / 2;
-                    // Calculate text position
-                    const textPos = polarToCartesian(CENTER.x, CENTER.y, RADIUS * 0.8, midAngle);
+                    const textRadius = (INNER_RADIUS + outerRadius) / 2;
+                    const textPos = polarToCartesian(CENTER.x, CENTER.y, textRadius, midAngle);
+                    const rotation = midAngle > 180 ? midAngle + 90 : midAngle - 90;
 
                     return (
-                        <G key={category.label} onPress={() => toggleNote(category.label)}>
+                        <G key={category.label}>
                             <Path
-                                d={createArc(startAngle, endAngle, INNER_RADIUS, category.sub.length > 0 ? RADIUS * 0.6 : RADIUS)}
+                                onPress={() => handleCategoryPress(category)}
+                                onLongPress={() => toggleNote(category.label)}
+                                d={createArc(startAngle, endAngle, INNER_RADIUS, outerRadius)}
                                 fill={category.color}
                                 opacity={isSelected ? 1 : 0.7}
                                 stroke={theme.colors.mainBackground}
@@ -95,28 +113,47 @@ export const TasteWheel: React.FC<TasteWheelProps> = ({ onNotesChange, selectedN
                                 fill="white"
                                 fontSize="10"
                                 fontWeight="bold"
-                                transform={`rotate(${midAngle - 90}, ${textPos.x}, ${textPos.y})`}
+                                opacity={isActive && hasSubs ? 0 : 1}
+                                transform={`rotate(${rotation}, ${textPos.x}, ${textPos.y})`}
                             >
                                 {category.label}
                             </SvgText>
 
-                            {/* Outer Ring for subcategories */}
-                            {category.sub.length > 0 && category.sub.map((sub, subIndex) => {
+                            {/* Outer Ring for subcategories - Only show if Active */}
+                            {isActive && hasSubs && category.sub.map((sub, subIndex) => {
                                 const subAngleStep = (endAngle - startAngle) / category.sub.length;
                                 const subStart = startAngle + (subIndex * subAngleStep);
                                 const subEnd = subStart + subAngleStep;
+                                const subMid = (subStart + subEnd) / 2;
                                 const isSubSelected = selectedNotes.includes(sub);
 
+                                const subTextRadius = (RADIUS * 0.6 + RADIUS) / 2;
+                                const subTextPos = polarToCartesian(CENTER.x, CENTER.y, subTextRadius, subMid);
+                                const subRotation = subMid > 180 ? subMid + 90 : subMid - 90;
+
                                 return (
-                                    <Path
-                                        key={sub}
-                                        d={createArc(subStart, subEnd, RADIUS * 0.6, RADIUS)}
-                                        fill={category.color}
-                                        opacity={isSubSelected ? 1 : 0.5}
-                                        stroke={theme.colors.mainBackground}
-                                        strokeWidth="1"
-                                        onPress={() => toggleNote(sub)}
-                                    />
+                                    <G key={sub}>
+                                        <Path
+                                            d={createArc(subStart, subEnd, RADIUS * 0.6, RADIUS)}
+                                            fill={category.color}
+                                            opacity={isSubSelected ? 1 : 0.5}
+                                            stroke={theme.colors.mainBackground}
+                                            strokeWidth="1"
+                                            onPress={() => toggleNote(sub)}
+                                        />
+                                        <SvgText pointerEvents="none"
+                                            x={subTextPos.x}
+                                            y={subTextPos.y}
+                                            textAnchor="middle"
+                                            alignmentBaseline="middle"
+                                            fill="white"
+                                            fontSize="8"
+                                            fontWeight="bold"
+                                            transform={`rotate(${subRotation}, ${subTextPos.x}, ${subTextPos.y})`}
+                                        >
+                                            {sub}
+                                        </SvgText>
+                                    </G>
                                 );
                             })}
                         </G>
@@ -132,7 +169,7 @@ export const TasteWheel: React.FC<TasteWheelProps> = ({ onNotesChange, selectedN
                     fontSize="14"
                     fontWeight="bold"
                 >
-                    TAP TO SELECT
+                    TAP TO EXPAND
                 </SvgText>
             </Svg>
             <Box flexDirection="row" flexWrap="wrap" gap="s" marginTop="m" justifyContent="center">

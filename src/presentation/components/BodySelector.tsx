@@ -23,7 +23,7 @@ const ZONES = [
     {
         id: 2,
         label: 'HEAVY', // SCHWER
-        color: '#A52A2A', // Red/Brown
+        color: '#D32F2F', // Strong Red
         descriptors: ['FULL', 'VELVETY', 'CHEWY', 'COATING'],
     },
 ];

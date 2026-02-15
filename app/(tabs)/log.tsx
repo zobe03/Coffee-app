@@ -1,23 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, TextInput } from 'react-native';
+import { ScrollView, TextInput, TouchableOpacity } from 'react-native';
 import { Box, Text, useTheme } from '../../src/presentation/theme';
 import { Stack, useRouter } from 'expo-router';
 import { Button } from '../../src/presentation/components/Button';
 import { BodySelector } from '../../src/presentation/components/BodySelector';
-import { ScaleSlider } from '../../src/presentation/components/ScaleSlider';
 import { TasteWheel } from '../../src/presentation/components/TasteWheel';
+import { SelectionModal } from '../../src/presentation/components/SelectionModal';
 import { BrewBuilder } from '../../src/domain/builders/BrewBuilder';
 import { BrewRepository } from '../../src/data/repositories/BrewRepository';
 import { CoffeeRepository } from '../../src/data/repositories/CoffeeRepository';
 import { GrinderRepository } from '../../src/data/repositories/GrinderRepository';
 import { Coffee } from '../../src/domain/entities/Coffee';
 import { Grinder } from '../../src/domain/entities/Grinder';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function BrewLogScreen() {
     const router = useRouter();
     const theme = useTheme();
     const [coffees, setCoffees] = useState<Coffee[]>([]);
     const [grinders, setGrinders] = useState<Grinder[]>([]);
+    const [showCoffeeModal, setShowCoffeeModal] = useState(false);
+    const [showGrinderModal, setShowGrinderModal] = useState(false);
 
     // State for BrewBuilder
     const [selectedCoffeeId, setSelectedCoffeeId] = useState<number | undefined>();
@@ -70,27 +73,67 @@ export default function BrewLogScreen() {
             <Stack.Screen options={{ title: 'Log Brew', headerBackTitle: 'Back' }} />
             <ScrollView contentContainerStyle={{ padding: theme.spacing.m, paddingBottom: 100 }}>
 
-                {/* Equipment Selection (Simplified) */}
+                {/* Equipment Selection */}
                 <Box marginBottom="l">
                     <Text variant="subheader" marginBottom="m">Equipment</Text>
-                    <Box flexDirection="row" gap="m">
-                        <Button
-                            label={selectedCoffeeId ? `Coffee: ${coffees.find(c => c.id === selectedCoffeeId)?.name}` : "Select Coffee"}
-                            onPress={() => {
-                                const next = coffees.find(c => c.id !== selectedCoffeeId)?.id || coffees[0]?.id;
-                                setSelectedCoffeeId(next);
-                            }}
-                            variant="outline"
-                        />
-                        <Button
-                            label={selectedGrinderId ? `Grinder: ${grinders.find(g => g.id === selectedGrinderId)?.name}` : "Select Grinder"}
-                            onPress={() => {
-                                const next = grinders.find(g => g.id !== selectedGrinderId)?.id || grinders[0]?.id;
-                                setSelectedGrinderId(next);
-                            }}
-                            variant="outline"
-                        />
+
+                    <Box gap="m">
+                        <TouchableOpacity onPress={() => setShowCoffeeModal(true)}>
+                            <Box
+                                backgroundColor="cardPrimaryBackground"
+                                padding="m"
+                                borderRadius={8}
+                                flexDirection="row"
+                                justifyContent="space-between"
+                                alignItems="center"
+                            >
+                                <Box>
+                                    <Text variant="caption" color="textSecondary">Coffee</Text>
+                                    <Text variant="body" fontWeight="bold">
+                                        {selectedCoffeeId ? coffees.find(c => c.id === selectedCoffeeId)?.name : "Select Coffee"}
+                                    </Text>
+                                </Box>
+                                <Ionicons name="chevron-down" size={20} color={theme.colors.textSecondary} />
+                            </Box>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity onPress={() => setShowGrinderModal(true)}>
+                            <Box
+                                backgroundColor="cardPrimaryBackground"
+                                padding="m"
+                                borderRadius={8}
+                                flexDirection="row"
+                                justifyContent="space-between"
+                                alignItems="center"
+                            >
+                                <Box>
+                                    <Text variant="caption" color="textSecondary">Grinder</Text>
+                                    <Text variant="body" fontWeight="bold">
+                                        {selectedGrinderId ? grinders.find(g => g.id === selectedGrinderId)?.name : "Select Grinder"}
+                                    </Text>
+                                </Box>
+                                <Ionicons name="chevron-down" size={20} color={theme.colors.textSecondary} />
+                            </Box>
+                        </TouchableOpacity>
                     </Box>
+
+                    <SelectionModal
+                        visible={showCoffeeModal}
+                        onClose={() => setShowCoffeeModal(false)}
+                        title="Select Coffee"
+                        items={coffees.map(c => ({ id: c.id!, label: c.name, subLabel: c.roastery }))}
+                        onSelect={(item) => setSelectedCoffeeId(Number(item.id))}
+                        selectedId={selectedCoffeeId}
+                    />
+
+                    <SelectionModal
+                        visible={showGrinderModal}
+                        onClose={() => setShowGrinderModal(false)}
+                        title="Select Grinder"
+                        items={grinders.map(g => ({ id: g.id!, label: g.name, subLabel: `${g.brand} ${g.model}` }))}
+                        onSelect={(item) => setSelectedGrinderId(Number(item.id))}
+                        selectedId={selectedGrinderId}
+                    />
                 </Box>
 
                 {/* Recipe */}
@@ -107,28 +150,12 @@ export default function BrewLogScreen() {
                     <InputField label="Grind Setting" value={grindSetting} onChange={setGrindSetting} placeholder="e.g. 2.4" keyboardType="decimal-pad" />
                 </Box>
 
-                {/* Scoring */}
+                {/* Taste Profile */}
                 <Box marginBottom="l">
-                    <Text variant="subheader" marginBottom="m">Scoring</Text>
+                    <Text variant="subheader" marginBottom="m">Taste Profile</Text>
 
                     <Text variant="body" marginBottom="s">Body</Text>
                     <BodySelector value={body} onChange={setBody} />
-
-                    <Box height={20} />
-
-                    <ScaleSlider
-                        label="ACIDITY"
-                        value={acidity}
-                        onChange={setAcidity}
-                        gradientColors={['#90EE90', '#FFFF00', '#FFA500']}
-                    />
-
-                    <ScaleSlider
-                        label="BITTERNESS"
-                        value={bitterness}
-                        onChange={setBitterness}
-                        gradientColors={['#FFC0CB', '#8B0000']}
-                    />
 
                     <Box height={20} />
                     <TasteWheel selectedNotes={tasteNotes} onNotesChange={setTasteNotes} />

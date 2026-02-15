@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { FlatList, Modal, TextInput } from 'react-native';
+import { FlatList, Modal, TextInput, TouchableOpacity } from 'react-native';
+import { Swipeable } from 'react-native-gesture-handler';
+import { Ionicons } from '@expo/vector-icons';
 import { Box, Text, useTheme } from '../theme';
 import { GrinderRepository } from '../../data/repositories/GrinderRepository';
 import { Grinder } from '../../domain/entities/Grinder';
@@ -33,16 +35,33 @@ export const ManageGrindersScreen = () => {
         loadGrinders();
     };
 
+    const handleDelete = async (id: number) => {
+        if (!id) return;
+        await repo.delete(id);
+        loadGrinders();
+    };
+
+    const renderRightActions = (id: number) => {
+        return (
+            <TouchableOpacity onPress={() => handleDelete(id)} style={{ justifyContent: 'center', alignItems: 'center', width: 80, height: '100%' }}>
+                <Box flex={1} backgroundColor="error" justifyContent="center" alignItems="center" width="100%" borderRadius={8}>
+                    <Ionicons name="trash-outline" size={24} color="white" />
+                </Box>
+            </TouchableOpacity>
+        );
+    };
+
     const renderItem = ({ item }: { item: Grinder }) => (
-        <Box
-            backgroundColor="cardPrimaryBackground"
-            padding="m"
-            marginBottom="s"
-            borderRadius={8}
-        >
-            <Text variant="subheader" fontSize={18}>{item.name}</Text>
-            <Text variant="body" color="textSecondary">{item.brand} - {item.model}</Text>
-        </Box>
+        <Swipeable renderRightActions={() => renderRightActions(item.id!)}>
+            <Box
+                backgroundColor="cardPrimaryBackground"
+                padding="m"
+                borderRadius={8}
+            >
+                <Text variant="subheader" fontSize={18}>{item.name}</Text>
+                <Text variant="body" color="textSecondary">{item.brand} - {item.model}</Text>
+            </Box>
+        </Swipeable>
     );
 
     return (
@@ -52,6 +71,7 @@ export const ManageGrindersScreen = () => {
                 data={grinders}
                 renderItem={renderItem}
                 keyExtractor={(item) => item.id?.toString() || Math.random().toString()}
+                ItemSeparatorComponent={() => <Box height={theme.spacing.s} />}
                 ListEmptyComponent={
                     <Text variant="body" textAlign="center" marginTop="xl">No grinders found.</Text>
                 }

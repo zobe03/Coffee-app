@@ -21,5 +21,8 @@ export class CoffeeRepository {
         return result.lastInsertRowId;
     }
 
-    // Update and Delete methods omitted for brevity but follow same pattern
+    async delete(id: number): Promise<void> {
+        const db = databaseService.getDatabase();
+        await db.runAsync('DELETE FROM coffees WHERE id = ?', [id]);
+    }
 }

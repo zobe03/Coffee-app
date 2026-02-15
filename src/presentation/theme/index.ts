@@ -14,7 +14,7 @@ const palette = {
     white: '#FFFFFF',
     black: '#000000',
     transparent: 'transparent',
-    error: '#CF6679',
+    error: '#FF453A',
 };
 
 const theme = createTheme({

@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { FlatList, Modal, TextInput } from 'react-native';
-import { Box, Text } from '../theme';
+import { FlatList, Modal, TextInput, TouchableOpacity } from 'react-native';
+import { Swipeable } from 'react-native-gesture-handler';
+import { Ionicons } from '@expo/vector-icons';
+import { Box, Text, useTheme } from '../theme';
 import { CoffeeRepository } from '../../data/repositories/CoffeeRepository';
 import { Coffee } from '../../domain/entities/Coffee';
 import { Button } from '../components/Button';
@@ -13,6 +15,7 @@ export const ManageCoffeesScreen = () => {
     const [roastery, setRoastery] = useState('');
     const repo = new CoffeeRepository();
     const router = useRouter();
+    const theme = useTheme();
 
     const loadCoffees = async () => {
         const data = await repo.getAll();
@@ -32,17 +35,33 @@ export const ManageCoffeesScreen = () => {
         loadCoffees();
     };
 
+    const handleDelete = async (id: number) => {
+        await repo.delete(id);
+        loadCoffees();
+    };
+
+    const renderRightActions = (id: number) => {
+        return (
+            <TouchableOpacity onPress={() => handleDelete(id)} style={{ justifyContent: 'center', alignItems: 'center', width: 80, height: '100%' }}>
+                <Box flex={1} backgroundColor="error" justifyContent="center" alignItems="center" width="100%" borderRadius={8}>
+                    <Ionicons name="trash-outline" size={24} color="white" />
+                </Box>
+            </TouchableOpacity>
+        );
+    };
+
     const renderItem = ({ item }: { item: Coffee }) => (
-        <Box
-            backgroundColor="cardPrimaryBackground"
-            padding="m"
-            marginBottom="s"
-            borderRadius={8}
-        >
-            <Text variant="subheader" fontSize={18}>{item.name}</Text>
-            <Text variant="body" color="textSecondary">{item.roastery}</Text>
-            <Text variant="caption">{item.origin} - {item.process}</Text>
-        </Box>
+        <Swipeable renderRightActions={() => renderRightActions(item.id!)}>
+            <Box
+                backgroundColor="cardPrimaryBackground"
+                padding="m"
+                borderRadius={8}
+            >
+                <Text variant="subheader" fontSize={18}>{item.name}</Text>
+                <Text variant="body" color="textSecondary">{item.roastery}</Text>
+                <Text variant="caption">{item.origin} - {item.process}</Text>
+            </Box>
+        </Swipeable>
     );
 
     return (
@@ -52,6 +71,7 @@ export const ManageCoffeesScreen = () => {
                 data={coffees}
                 renderItem={renderItem}
                 keyExtractor={(item) => item.id?.toString() || Math.random().toString()}
+                ItemSeparatorComponent={() => <Box height={theme.spacing.s} />}
                 ListEmptyComponent={
                     <Text variant="body" textAlign="center" marginTop="xl">No coffees found.</Text>
                 }

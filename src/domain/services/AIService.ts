@@ -26,17 +26,21 @@ export class AIService {
         this.model = this.genAI.getGenerativeModel({ model: "gemini-3-flash-preview" }, { apiVersion: "v1alpha" });
     }
 
-    async getAdvice(currentLog: Partial<BrewLog>, history: BrewLog[], goal?: string): Promise<string> {
+    async getAdvice(currentLog: Partial<BrewLog>, history: BrewLog[], goal?: string, context?: { grinderName?: string, coffeeName?: string }): Promise<string> {
         try {
             const prompt = `
         You are a specialty coffee expert. Analyze this brew and suggest improvements.
         
+        Context:
+        - Coffee: ${context?.coffeeName || "Unknown"}
+        - Grinder: ${context?.grinderName || "Unknown"}
+
         Current Brew:
         - Dose In: ${currentLog.doseIn}g
         - Dose Out: ${currentLog.doseOut}g
         - Time: ${currentLog.timeSeconds}s
         - Temp: ${currentLog.temperature}°C
-        - Grind: ${currentLog.grindSetting}
+        - Grind Setting: ${currentLog.grindSetting}
         - Taste: Body=${currentLog.score?.body}/2, Acidity=${currentLog.score?.acidity}/10, Bitterness=${currentLog.score?.bitterness}/10
         - Notes: ${currentLog.score?.tasteNotes?.join(', ')}
 
@@ -46,7 +50,7 @@ export class AIService {
 
         Provide extremely concise, actionable advice in bullet points. Max 3-4 bullet points.
         Format as Markdown.
-        Focus on grind size, dose, and yield.
+        Focus on grind size, dose, and yield. Consider the specific grinder if known.
       `;
 
             const result = await this.model.generateContent(prompt);

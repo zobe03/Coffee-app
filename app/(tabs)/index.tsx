@@ -86,9 +86,7 @@ export default function DashboardScreen() {
                             </Box>
                             <Box alignItems="flex-end">
                                 <Text variant="body" fontWeight="bold" fontSize={16}>{lastBrew.timeSeconds}s</Text>
-                                {lastBrew.score && (
-                                    <Text variant="caption" color="primary" fontWeight="bold">Score: {(lastBrew.score.body || 0) + (lastBrew.score.acidity || 0) + (lastBrew.score.bitterness || 0)}</Text>
-                                )}
+
                             </Box>
                         </Box>
                     </Box>
@@ -98,8 +96,7 @@ export default function DashboardScreen() {
                     </Box>
                 )}
 
-                <Box height={20} />
-                <Button label="Generate Test Data (Dev)" onPress={generateData} variant="outline" />
+
 
             </ScrollView>
         </Box>

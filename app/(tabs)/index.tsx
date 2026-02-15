@@ -62,9 +62,24 @@ export default function DashboardScreen() {
                 contentContainerStyle={{ padding: theme.spacing.m }}
                 refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.primary} />}
             >
-                <Box marginBottom="l" paddingTop="m">
-                    <Text variant="header" fontSize={28} color="primary" opacity={0.9}>BrewRef</Text>
-                    <Text variant="body" color="textSecondary">Your Coffee Journey</Text>
+                <Box marginBottom="l" paddingTop="l">
+                    <Text
+                        variant="header"
+                        fontSize={48}
+                        color="primary"
+                        fontWeight="900"
+                        style={{ letterSpacing: -1 }}
+                    >
+                        BrewRef
+                    </Text>
+                    <Text
+                        variant="body"
+                        color="textSecondary"
+                        fontSize={14}
+                        style={{ letterSpacing: 3, textTransform: 'uppercase', opacity: 0.7 }}
+                    >
+                        Your Coffee Journey
+                    </Text>
                 </Box>
 
                 <Box flexDirection="row" gap="m" marginBottom="l">

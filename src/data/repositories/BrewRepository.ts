@@ -24,6 +24,11 @@ export class BrewRepository {
         return result.lastInsertRowId;
     }
 
+    async delete(id: number): Promise<void> {
+        const db = databaseService.getDatabase();
+        await db.runAsync('DELETE FROM brew_logs WHERE id = ?', [id]);
+    }
+
     private mapRowToBrewLog(row: any): BrewLog {
         return {
             id: row.id,

@@ -40,9 +40,18 @@ export const generateMockData = async (count: number = 50) => {
         // Add some random variation
         const doseIn = baseRecipe.doseIn + (Math.random() - 0.5) * 0.5; // +/- 0.25g
         const doseOut = baseRecipe.doseOut + (Math.random() - 0.5) * 5; // +/- 2.5g
-        const time = baseRecipe.time + (Math.random() - 0.5) * 8; // +/- 4s
+
+        // Logic: Finer grind (lower number) -> Slower time (higher number)
+        // Base grind is 15. Range +/- 5.
+        const grindOffset = (Math.random() - 0.5) * 10; // -5 to +5
+        const grindSetting = (baseRecipe.grind + grindOffset).toFixed(1);
+
+        // Time affected by grind: finer (-offset) = slower (+time)
+        // e.g. grind 10 (-5 offset) -> time +10s?
+        const timeBase = baseRecipe.time - (grindOffset * 2); // if grind is 20 (+5), time is 20 (-10) = fast. if grind is 10 (-5), time is 40 (+10) = slow.
+        const time = timeBase + (Math.random() - 0.5) * 4; // Add some noise +/- 2s
+
         const temp = baseRecipe.temp + Math.floor((Math.random() - 0.5) * 2); // +/- 1C
-        const grindSetting = (baseRecipe.grind + (Math.random() - 0.5) * 2).toFixed(1);
 
         // Simulate taste based on extraction
         let body = 1; // Light

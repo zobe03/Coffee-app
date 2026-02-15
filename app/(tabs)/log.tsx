@@ -12,6 +12,8 @@ import { CoffeeRepository } from '../../src/data/repositories/CoffeeRepository';
 import { GrinderRepository } from '../../src/data/repositories/GrinderRepository';
 import { Coffee } from '../../src/domain/entities/Coffee';
 import { Grinder } from '../../src/domain/entities/Grinder';
+import { ActionSheetIOS } from 'react-native';
+import { GrindSelector } from '../../src/presentation/components/GrindSelector';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function BrewLogScreen() {
@@ -44,6 +46,8 @@ export default function BrewLogScreen() {
         };
         fetchData();
     }, []);
+
+
 
     const handleSave = async () => {
         if (!selectedCoffeeId || !selectedGrinderId) {
@@ -147,7 +151,7 @@ export default function BrewLogScreen() {
                         <InputField label="Time (s)" value={time} onChange={setTime} keyboardType="decimal-pad" />
                         <InputField label="Temp (°C)" value={temp} onChange={setTemp} keyboardType="decimal-pad" />
                     </Box>
-                    <InputField label="Grind Setting" value={grindSetting} onChange={setGrindSetting} placeholder="e.g. 2.4" keyboardType="decimal-pad" />
+                    <GrindSelector value={grindSetting} onChange={setGrindSetting} />
                 </Box>
 
                 {/* Taste Profile */}

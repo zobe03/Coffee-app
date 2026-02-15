@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ScrollView, RefreshControl } from 'react-native';
+import { ScrollView, RefreshControl, TouchableOpacity, Modal } from 'react-native';
 import { Box, Text, useTheme } from '../../src/presentation/theme';
 import { BrewRepository } from '../../src/data/repositories/BrewRepository';
 import { BrewLog } from '../../src/domain/entities/BrewLog';
@@ -12,6 +12,8 @@ export default function HistoryScreen() {
     const [brews, setBrews] = useState<BrewLog[]>([]);
     const [coffees, setCoffees] = useState<Record<number, Coffee>>({});
     const [refreshing, setRefreshing] = useState(false);
+    const [selectedBrew, setSelectedBrew] = useState<BrewLog | null>(null);
+    const [detailModalVisible, setDetailModalVisible] = useState(false);
 
     const loadData = async () => {
         const brewRepo = new BrewRepository();
@@ -39,6 +41,22 @@ export default function HistoryScreen() {
         setRefreshing(false);
     };
 
+    const handleDelete = async () => {
+        if (!selectedBrew || !selectedBrew.id) return;
+        if (confirm('Are you sure you want to delete this brew log?')) {
+            const brewRepo = new BrewRepository();
+            await brewRepo.delete(selectedBrew.id);
+            setDetailModalVisible(false);
+            setSelectedBrew(null);
+            loadData();
+        }
+    };
+
+    const openDetail = (brew: BrewLog) => {
+        setSelectedBrew(brew);
+        setDetailModalVisible(true);
+    };
+
     return (
         <Box flex={1} backgroundColor="mainBackground">
             <ScrollView
@@ -51,49 +69,133 @@ export default function HistoryScreen() {
                     </Box>
                 ) : (
                     brews.map((brew) => (
-                        <Box
-                            key={brew.id}
-                            backgroundColor="cardPrimaryBackground"
-                            padding="m"
-                            borderRadius={12}
-                            marginBottom="m"
-                            borderLeftWidth={4}
-                            borderLeftColor="primary"
-                        >
-                            <Box flexDirection="row" justifyContent="space-between" alignItems="center" marginBottom="s">
-                                <Text variant="subheader" fontSize={16} color="textPrimary">
-                                    {coffees[brew.coffeeId]?.name || 'Unknown Coffee'}
-                                </Text>
-                                <Text variant="caption" color="textSecondary">
-                                    {new Date(brew.date).toLocaleDateString()}
-                                </Text>
-                            </Box>
-
-                            <Box flexDirection="row" gap="m" marginBottom="s">
-                                <Text variant="body" fontSize={14}>
-                                    in: <Text variant="body" color="primary" fontWeight="bold">{brew.doseIn}g</Text>
-                                </Text>
-                                <Text variant="body" fontSize={14}>
-                                    out: <Text variant="body" color="primary" fontWeight="bold">{brew.doseOut}g</Text>
-                                </Text>
-                                <Text variant="body" fontSize={14}>
-                                    time: <Text variant="body" color="primary" fontWeight="bold">{brew.timeSeconds}s</Text>
-                                </Text>
-                            </Box>
-
-                            {brew.score && (
-                                <Box flexDirection="row" gap="s" flexWrap="wrap">
-                                    {brew.score.tasteNotes?.map((note, idx) => (
-                                        <Box key={idx} backgroundColor="mainBackground" paddingHorizontal="s" paddingVertical="xs" borderRadius={4}>
-                                            <Text variant="caption" fontSize={10} color="textSecondary">{note}</Text>
-                                        </Box>
-                                    ))}
+                        <TouchableOpacity key={brew.id} onPress={() => openDetail(brew)} activeOpacity={0.7}>
+                            <Box
+                                backgroundColor="cardPrimaryBackground"
+                                padding="m"
+                                borderRadius={12}
+                                marginBottom="m"
+                                borderLeftWidth={4}
+                                borderLeftColor="primary"
+                            >
+                                <Box flexDirection="row" justifyContent="space-between" alignItems="center" marginBottom="s">
+                                    <Text variant="subheader" fontSize={16} color="textPrimary">
+                                        {coffees[brew.coffeeId]?.name || 'Unknown Coffee'}
+                                    </Text>
+                                    <Text variant="caption" color="textSecondary">
+                                        {new Date(brew.date).toLocaleDateString()}
+                                    </Text>
                                 </Box>
-                            )}
-                        </Box>
+
+                                <Box flexDirection="row" gap="m" marginBottom="s">
+                                    <Text variant="body" fontSize={14}>
+                                        in: <Text variant="body" color="primary" fontWeight="bold">{brew.doseIn}g</Text>
+                                    </Text>
+                                    <Text variant="body" fontSize={14}>
+                                        out: <Text variant="body" color="primary" fontWeight="bold">{brew.doseOut}g</Text>
+                                    </Text>
+                                    <Text variant="body" fontSize={14}>
+                                        time: <Text variant="body" color="primary" fontWeight="bold">{brew.timeSeconds}s</Text>
+                                    </Text>
+                                </Box>
+
+                                {brew.score && (
+                                    <Box flexDirection="row" gap="s" flexWrap="wrap">
+                                        {brew.score.tasteNotes?.map((note, idx) => (
+                                            <Box key={idx} backgroundColor="mainBackground" paddingHorizontal="s" paddingVertical="xs" borderRadius={4}>
+                                                <Text variant="caption" fontSize={10} color="textSecondary">{note}</Text>
+                                            </Box>
+                                        ))}
+                                    </Box>
+                                )}
+                            </Box>
+                        </TouchableOpacity>
                     ))
                 )}
             </ScrollView>
+
+            {/* Detail Modal */}
+            <Modal
+                visible={detailModalVisible}
+                animationType="slide"
+                transparent={true}
+                onRequestClose={() => setDetailModalVisible(false)}
+            >
+                <Box flex={1} justifyContent="center" alignItems="center" backgroundColor="overlayBackground" padding="m">
+                    <Box width="90%" backgroundColor="cardPrimaryBackground" borderRadius={16} padding="l" maxHeight="80%">
+                        {selectedBrew && (
+                            <ScrollView>
+                                <Box flexDirection="row" justifyContent="space-between" alignItems="center" marginBottom="m">
+                                    <Text variant="header" fontSize={20}>{coffees[selectedBrew.coffeeId]?.name || 'Unknown'}</Text>
+                                    <TouchableOpacity onPress={() => setDetailModalVisible(false)}>
+                                        <Text variant="body" color="textSecondary">Close</Text>
+                                    </TouchableOpacity>
+                                </Box>
+
+                                <Text variant="caption" color="textSecondary" marginBottom="l">
+                                    {new Date(selectedBrew.date).toLocaleString()}
+                                </Text>
+
+                                <Box flexDirection="row" flexWrap="wrap" gap="l" marginBottom="l">
+                                    <Box>
+                                        <Text variant="caption" color="textSecondary">Dose In</Text>
+                                        <Text variant="subheader">{selectedBrew.doseIn}g</Text>
+                                    </Box>
+                                    <Box>
+                                        <Text variant="caption" color="textSecondary">Dose Out</Text>
+                                        <Text variant="subheader">{selectedBrew.doseOut}g</Text>
+                                    </Box>
+                                    <Box>
+                                        <Text variant="caption" color="textSecondary">Time</Text>
+                                        <Text variant="subheader">{selectedBrew.timeSeconds}s</Text>
+                                    </Box>
+                                    <Box>
+                                        <Text variant="caption" color="textSecondary">Ratio</Text>
+                                        <Text variant="subheader">1:{(selectedBrew.doseOut / selectedBrew.doseIn).toFixed(1)}</Text>
+                                    </Box>
+                                    <Box>
+                                        <Text variant="caption" color="textSecondary">Grind</Text>
+                                        <Text variant="subheader">{selectedBrew.grindSetting}</Text>
+                                    </Box>
+                                </Box>
+
+                                <Box marginBottom="l">
+                                    <Text variant="subheader" marginBottom="s" fontSize={16}>Taste Profile</Text>
+                                    <Text variant="body">Body: {['Watery', 'Light', 'Medium', 'Heavy', 'Syrupy'][selectedBrew.score.body] || selectedBrew.score.body}</Text>
+                                    <Text variant="body">Acidity: {selectedBrew.score.acidity}/10</Text>
+                                    <Text variant="body">Bitterness: {selectedBrew.score.bitterness}/10</Text>
+                                </Box>
+
+                                {selectedBrew.score.tasteNotes && selectedBrew.score.tasteNotes.length > 0 && (
+                                    <Box marginBottom="l">
+                                        <Text variant="subheader" marginBottom="s" fontSize={16}>Notes</Text>
+                                        <Box flexDirection="row" flexWrap="wrap" gap="s">
+                                            {selectedBrew.score.tasteNotes.map((note, idx) => (
+                                                <Box key={idx} backgroundColor="mainBackground" paddingHorizontal="m" paddingVertical="s" borderRadius={6}>
+                                                    <Text variant="body" fontSize={12}>{note}</Text>
+                                                </Box>
+                                            ))}
+                                        </Box>
+                                    </Box>
+                                )}
+
+                                <Box height={20} />
+                                <TouchableOpacity
+                                    onPress={handleDelete}
+                                    style={{
+                                        backgroundColor: theme.colors.error,
+                                        padding: 15,
+                                        borderRadius: 8,
+                                        alignItems: 'center'
+                                    }}
+                                >
+                                    <Text variant="body" color="textPrimary" fontWeight="bold">Delete Log</Text>
+                                </TouchableOpacity>
+                            </ScrollView>
+                        )}
+                    </Box>
+                </Box>
+            </Modal>
         </Box>
     );
 }

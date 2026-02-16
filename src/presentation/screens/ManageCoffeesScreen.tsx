@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { FlatList, Modal, TextInput, TouchableOpacity } from 'react-native';
 import { Swipeable } from 'react-native-gesture-handler';
 import { Ionicons } from '@expo/vector-icons';
@@ -6,7 +6,8 @@ import { Box, Text, useTheme } from '../theme';
 import { CoffeeRepository } from '../../data/repositories/CoffeeRepository';
 import { Coffee } from '../../domain/entities/Coffee';
 import { Button } from '../components/Button';
-import { Stack, useRouter } from 'expo-router';
+import { Stack } from 'expo-router';
+import { useFocusEffect } from 'expo-router';
 
 export const ManageCoffeesScreen = () => {
     const [coffees, setCoffees] = useState<Coffee[]>([]);
@@ -14,7 +15,6 @@ export const ManageCoffeesScreen = () => {
     const [name, setName] = useState('');
     const [roastery, setRoastery] = useState('');
     const repo = new CoffeeRepository();
-    const router = useRouter();
     const theme = useTheme();
 
     const loadCoffees = async () => {
@@ -22,9 +22,11 @@ export const ManageCoffeesScreen = () => {
         setCoffees(data);
     };
 
-    useEffect(() => {
-        loadCoffees();
-    }, []);
+    useFocusEffect(
+        useCallback(() => {
+            loadCoffees();
+        }, [])
+    );
 
     const handleAdd = async () => {
         if (!name) return;
@@ -92,12 +94,12 @@ export const ManageCoffeesScreen = () => {
 
                         <TextInput
                             placeholder="Coffee Name"
-                            placeholderTextColor="#666"
+                            placeholderTextColor={theme.colors.textSecondary}
                             value={name}
                             onChangeText={setName}
                             style={{
-                                backgroundColor: '#2a2a2a',
-                                color: 'white',
+                                backgroundColor: theme.colors.mainBackground,
+                                color: theme.colors.textPrimary,
                                 padding: 10,
                                 borderRadius: 5,
                                 marginBottom: 10
@@ -105,12 +107,12 @@ export const ManageCoffeesScreen = () => {
                         />
                         <TextInput
                             placeholder="Roastery"
-                            placeholderTextColor="#666"
+                            placeholderTextColor={theme.colors.textSecondary}
                             value={roastery}
                             onChangeText={setRoastery}
                             style={{
-                                backgroundColor: '#2a2a2a',
-                                color: 'white',
+                                backgroundColor: theme.colors.mainBackground,
+                                color: theme.colors.textPrimary,
                                 padding: 10,
                                 borderRadius: 5,
                                 marginBottom: 20

@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { Modal, FlatList, TouchableOpacity, ScrollView, ActivityIndicator, TextInput, View } from 'react-native';
+import React, { useCallback, useState } from 'react';
+import { Modal, FlatList, TouchableOpacity, ScrollView, ActivityIndicator, TextInput, View, Alert, Platform } from 'react-native';
 import { Box, Text, useTheme } from '../../src/presentation/theme';
 import { Button } from '../../src/presentation/components/Button';
-import { Stack } from 'expo-router';
+import { Stack, useFocusEffect } from 'expo-router';
 import { aiService } from '../../src/domain/services/AIService';
 import { BrewRepository } from '../../src/data/repositories/BrewRepository';
 import { BrewLog } from '../../src/domain/entities/BrewLog';
@@ -26,9 +26,11 @@ export default function AdvisorScreen() {
 
     // Removed loadLastBrew effect
 
-    useEffect(() => {
-        loadData();
-    }, []);
+    useFocusEffect(
+        useCallback(() => {
+            loadData();
+        }, [])
+    );
 
     const loadData = async () => {
         const brewRepo = new BrewRepository();
@@ -107,15 +109,36 @@ export default function AdvisorScreen() {
                     <Box height={10} />
                     <Button
                         label="Nuke Data (Clear All)"
-                        onPress={async () => {
-                            if (confirm('Are you sure? This will delete all data.')) {
-                                localStorage.clear();
-                                window.location.reload();
+                        onPress={() => {
+                            const nukeAllData = async () => {
+                                const brewRepo = new BrewRepository();
+                                const coffeeRepo = new CoffeeRepository();
+                                const grinderRepo = new GrinderRepository();
+                                const brews = await brewRepo.getAll();
+                                const coffees = await coffeeRepo.getAll();
+                                const grinders = await grinderRepo.getAll();
+                                for (const b of brews) { if (b.id) await brewRepo.delete(b.id); }
+                                for (const c of coffees) { if (c.id) await coffeeRepo.delete(c.id); }
+                                for (const g of grinders) { if (g.id) await grinderRepo.delete(g.id); }
+                                loadData();
+                            };
+
+                            if (Platform.OS === 'web') {
+                                if (confirm('Are you sure? This will delete all data.')) {
+                                    nukeAllData();
+                                }
+                            } else {
+                                Alert.alert(
+                                    'Nuke Data',
+                                    'Are you sure? This will delete all data.',
+                                    [
+                                        { text: 'Cancel', style: 'cancel' },
+                                        { text: 'Delete All', style: 'destructive', onPress: nukeAllData },
+                                    ]
+                                );
                             }
                         }}
                         variant="outline"
-                        style={{ borderColor: theme.colors.error }}
-                        textStyle={{ color: theme.colors.error }}
                     />
                 </Box>
 

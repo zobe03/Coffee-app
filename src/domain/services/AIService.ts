@@ -1,10 +1,10 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenerativeAI, GenerativeModel } from "@google/generative-ai";
 import { BrewLog } from "../entities/BrewLog";
 
 export class AIService {
     private static instance: AIService;
     private genAI: GoogleGenerativeAI;
-    private model: any;
+    private model: GenerativeModel;
 
     private constructor() {
         // Ideally this comes from ENV or user settings
@@ -58,12 +58,8 @@ export class AIService {
             return response.text();
         } catch (error) {
             console.error("AI Error:", error);
-            // @ts-ignore
-            if (global.alert) {
-                // @ts-ignore
-                alert("AI Error: " + (error.message || "Unknown error"));
-            }
-            return "Unable to get advice. Please check your API Key and internet connection.";
+            const message = error instanceof Error ? error.message : "Unknown error";
+            return `Unable to get advice: ${message}. Please check your API Key and internet connection.`;
         }
     }
 }

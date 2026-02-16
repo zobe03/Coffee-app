@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ScrollView, RefreshControl, TouchableOpacity, Modal } from 'react-native';
+import { ScrollView, RefreshControl, TouchableOpacity, Modal, Alert } from 'react-native';
 import { Box, Text, useTheme } from '../../src/presentation/theme';
 import { BrewRepository } from '../../src/data/repositories/BrewRepository';
 import { BrewLog } from '../../src/domain/entities/BrewLog';
@@ -41,15 +41,26 @@ export default function HistoryScreen() {
         setRefreshing(false);
     };
 
-    const handleDelete = async () => {
+    const handleDelete = () => {
         if (!selectedBrew || !selectedBrew.id) return;
-        if (confirm('Are you sure you want to delete this brew log?')) {
-            const brewRepo = new BrewRepository();
-            await brewRepo.delete(selectedBrew.id);
-            setDetailModalVisible(false);
-            setSelectedBrew(null);
-            loadData();
-        }
+        Alert.alert(
+            'Delete Brew Log',
+            'Are you sure you want to delete this brew log?',
+            [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                    text: 'Delete',
+                    style: 'destructive',
+                    onPress: async () => {
+                        const brewRepo = new BrewRepository();
+                        await brewRepo.delete(selectedBrew.id!);
+                        setDetailModalVisible(false);
+                        setSelectedBrew(null);
+                        loadData();
+                    },
+                },
+            ]
+        );
     };
 
     const openDetail = (brew: BrewLog) => {

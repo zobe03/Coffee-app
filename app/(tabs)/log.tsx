@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { ScrollView, TextInput, TouchableOpacity } from 'react-native';
 import { Box, Text, useTheme } from '../../src/presentation/theme';
-import { Stack, useRouter } from 'expo-router';
+import { Stack, useRouter, useFocusEffect } from 'expo-router';
 import { Button } from '../../src/presentation/components/Button';
 import { BodySelector } from '../../src/presentation/components/BodySelector';
 import { TasteWheel } from '../../src/presentation/components/TasteWheel';
@@ -12,9 +12,8 @@ import { CoffeeRepository } from '../../src/data/repositories/CoffeeRepository';
 import { GrinderRepository } from '../../src/data/repositories/GrinderRepository';
 import { Coffee } from '../../src/domain/entities/Coffee';
 import { Grinder } from '../../src/domain/entities/Grinder';
-import { ActionSheetIOS } from 'react-native';
-import { GrindSelector } from '../../src/presentation/components/GrindSelector';
 import { Ionicons } from '@expo/vector-icons';
+import { GrindSelector } from '../../src/presentation/components/GrindSelector';
 
 export default function BrewLogScreen() {
     const router = useRouter();
@@ -64,13 +63,15 @@ export default function BrewLogScreen() {
         setTime('0');
     };
 
-    useEffect(() => {
-        const fetchData = async () => {
-            setCoffees(await new CoffeeRepository().getAll());
-            setGrinders(await new GrinderRepository().getAll());
-        };
-        fetchData();
-    }, []);
+    useFocusEffect(
+        useCallback(() => {
+            const fetchData = async () => {
+                setCoffees(await new CoffeeRepository().getAll());
+                setGrinders(await new GrinderRepository().getAll());
+            };
+            fetchData();
+        }, [])
+    );
 
 
 

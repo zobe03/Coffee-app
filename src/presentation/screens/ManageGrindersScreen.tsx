@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { FlatList, Modal, TextInput, TouchableOpacity } from 'react-native';
 import { Swipeable } from 'react-native-gesture-handler';
 import { Ionicons } from '@expo/vector-icons';
@@ -6,32 +6,36 @@ import { Box, Text, useTheme } from '../theme';
 import { GrinderRepository } from '../../data/repositories/GrinderRepository';
 import { Grinder } from '../../domain/entities/Grinder';
 import { Button } from '../components/Button';
-import { Stack, useRouter } from 'expo-router';
+import { Stack } from 'expo-router';
+import { useFocusEffect } from 'expo-router';
 
 export const ManageGrindersScreen = () => {
     const [grinders, setGrinders] = useState<Grinder[]>([]);
     const [modalVisible, setModalVisible] = useState(false);
     const [name, setName] = useState('');
     const [brand, setBrand] = useState('');
+    const [model, setModel] = useState('');
     const repo = new GrinderRepository();
     const theme = useTheme();
-    const router = useRouter();
 
     const loadGrinders = async () => {
         const data = await repo.getAll();
         setGrinders(data);
     };
 
-    useEffect(() => {
-        loadGrinders();
-    }, []);
+    useFocusEffect(
+        useCallback(() => {
+            loadGrinders();
+        }, [])
+    );
 
     const handleAdd = async () => {
         if (!name) return;
-        await repo.create({ name, brand: brand || 'Unknown', model: 'Standard', burrSizeMm: 64 });
+        await repo.create({ name, brand: brand || 'Unknown', model: model || 'Standard' });
         setModalVisible(false);
         setName('');
         setBrand('');
+        setModel('');
         loadGrinders();
     };
 
@@ -92,12 +96,12 @@ export const ManageGrindersScreen = () => {
 
                         <TextInput
                             placeholder="Nickname (e.g. My Niche)"
-                            placeholderTextColor="#666"
+                            placeholderTextColor={theme.colors.textSecondary}
                             value={name}
                             onChangeText={setName}
                             style={{
-                                backgroundColor: '#2a2a2a',
-                                color: 'white',
+                                backgroundColor: theme.colors.mainBackground,
+                                color: theme.colors.textPrimary,
                                 padding: 10,
                                 borderRadius: 5,
                                 marginBottom: 10
@@ -105,12 +109,25 @@ export const ManageGrindersScreen = () => {
                         />
                         <TextInput
                             placeholder="Brand"
-                            placeholderTextColor="#666"
+                            placeholderTextColor={theme.colors.textSecondary}
                             value={brand}
                             onChangeText={setBrand}
                             style={{
-                                backgroundColor: '#2a2a2a',
-                                color: 'white',
+                                backgroundColor: theme.colors.mainBackground,
+                                color: theme.colors.textPrimary,
+                                padding: 10,
+                                borderRadius: 5,
+                                marginBottom: 10
+                            }}
+                        />
+                        <TextInput
+                            placeholder="Model"
+                            placeholderTextColor={theme.colors.textSecondary}
+                            value={model}
+                            onChangeText={setModel}
+                            style={{
+                                backgroundColor: theme.colors.mainBackground,
+                                color: theme.colors.textPrimary,
                                 padding: 10,
                                 borderRadius: 5,
                                 marginBottom: 20

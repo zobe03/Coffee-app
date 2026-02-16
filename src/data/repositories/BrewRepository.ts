@@ -1,10 +1,26 @@
 import { databaseService } from '../../domain/services/DatabaseService';
 import { BrewLog, Score } from '../../domain/entities/BrewLog';
 
+interface BrewLogRow {
+    id: number;
+    coffee_id: number;
+    grinder_id: number;
+    date: string;
+    dose_in: number;
+    dose_out: number;
+    time_seconds: number;
+    temperature: number | null;
+    grind_setting: string | null;
+    rating_body: number;
+    rating_acidity: number;
+    rating_bitterness: number;
+    taste_notes: string | null;
+}
+
 export class BrewRepository {
     async getAll(): Promise<BrewLog[]> {
         const db = databaseService.getDatabase();
-        const rows = await db.getAllAsync<any>('SELECT * FROM brew_logs');
+        const rows = await db.getAllAsync<BrewLogRow>('SELECT * FROM brew_logs');
         return rows.map(this.mapRowToBrewLog);
     }
 
@@ -29,7 +45,7 @@ export class BrewRepository {
         await db.runAsync('DELETE FROM brew_logs WHERE id = ?', [id]);
     }
 
-    private mapRowToBrewLog(row: any): BrewLog {
+    private mapRowToBrewLog(row: BrewLogRow): BrewLog {
         return {
             id: row.id,
             coffeeId: row.coffee_id,
@@ -38,8 +54,8 @@ export class BrewRepository {
             doseIn: row.dose_in,
             doseOut: row.dose_out,
             timeSeconds: row.time_seconds,
-            temperature: row.temperature,
-            grindSetting: row.grind_setting,
+            temperature: row.temperature ?? undefined,
+            grindSetting: row.grind_setting ?? undefined,
             score: {
                 body: row.rating_body,
                 acidity: row.rating_acidity,

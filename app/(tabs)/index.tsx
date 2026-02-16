@@ -7,9 +7,7 @@ import { CoffeeRepository } from '../../src/data/repositories/CoffeeRepository';
 import { BrewLog } from '../../src/domain/entities/BrewLog';
 import { Coffee } from '../../src/domain/entities/Coffee';
 import { MaterialCommunityIcons, Feather } from '@expo/vector-icons';
-import { databaseService } from '../../src/domain/services/DatabaseService';
 import { Button } from '../../src/presentation/components/Button';
-import { SyntheticDataFactory } from '../../src/domain/services/SyntheticDataFactory';
 
 export default function DashboardScreen() {
     const theme = useTheme();
@@ -24,16 +22,6 @@ export default function DashboardScreen() {
     const [topCoffeeName, setTopCoffeeName] = useState('-');
 
     const [refreshing, setRefreshing] = useState(false);
-
-    useEffect(() => {
-        const init = async () => {
-            // Ensure DB is ready
-            try {
-                await databaseService.initialize();
-            } catch (e) { console.error(e); }
-        };
-        init();
-    }, []);
 
     const loadData = async () => {
         const brewRepo = new BrewRepository();
@@ -98,12 +86,7 @@ export default function DashboardScreen() {
         setRefreshing(false);
     };
 
-    const generateData = async () => {
-        const factory = new SyntheticDataFactory();
-        await factory.generateEssentialData();
-        alert('Data Generated!');
-        loadData();
-    };
+
 
     return (
         <Box flex={1} backgroundColor="mainBackground">

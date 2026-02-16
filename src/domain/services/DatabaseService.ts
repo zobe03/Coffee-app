@@ -59,6 +59,10 @@ class WebDatabaseAdapter implements DBInterface {
                 const id = params[0];
                 data = data.filter((item: any) => item.id !== id);
                 this.saveData(table, data);
+            } else {
+                // DELETE FROM table (no WHERE) — wipe all rows
+                this.saveData(table, []);
+                this.saveLastId(table, 0);
             }
         } else if (operation === 'UPDATE') {
             // Not implemented yet
@@ -180,6 +184,13 @@ class DatabaseService {
             throw new Error('Database not initialized. Call initialize() first.');
         }
         return this.db;
+    }
+
+    public async nukeAllData(): Promise<void> {
+        const db = this.getDatabase();
+        await db.runAsync('DELETE FROM brew_logs');
+        await db.runAsync('DELETE FROM coffees');
+        await db.runAsync('DELETE FROM grinders');
     }
 }
 

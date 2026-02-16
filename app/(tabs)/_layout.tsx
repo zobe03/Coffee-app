@@ -24,7 +24,7 @@ export default function TabLayout() {
                 headerTintColor: theme.colors.textPrimary,
                 tabBarLabelStyle: {
                     fontSize: 10,
-                    fontFamily: Platform.OS === 'ios' ? 'System' : 'Roboto',
+                    fontFamily: 'Inter_600SemiBold',
                     fontWeight: '600',
                 },
             }}

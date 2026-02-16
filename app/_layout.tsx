@@ -10,11 +10,20 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { databaseService } from '../src/domain/services/DatabaseService';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, View, Text, Platform } from 'react-native';
+import { useFonts, Inter_400Regular, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter';
+import { JetBrainsMono_400Regular } from '@expo-google-fonts/jetbrains-mono';
 
 export default function RootLayout() {
     const colorScheme = useColorScheme();
     const [dbInitialized, setDbInitialized] = useState(false);
     const [dbError, setDbError] = useState<Error | null>(null);
+
+    const [fontsLoaded] = useFonts({
+        Inter_400Regular,
+        Inter_600SemiBold,
+        Inter_700Bold,
+        JetBrainsMono_400Regular,
+    });
 
     useEffect(() => {
         const init = async () => {
@@ -30,7 +39,7 @@ export default function RootLayout() {
         init();
     }, []);
 
-    if (!dbInitialized) {
+    if (!dbInitialized || !fontsLoaded) {
         return (
             <View style={{ flex: 1, backgroundColor: theme.colors.mainBackground, justifyContent: 'center', alignItems: 'center' }}>
                 <ActivityIndicator size="large" color={theme.colors.primary} />
@@ -52,16 +61,15 @@ export default function RootLayout() {
             <ThemeProvider theme={theme}>
                 <NavigationThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
                     {/* Web Container Wrapper */}
-                    <View style={{ flex: 1, backgroundColor: Platform.OS === 'web' ? '#121212' : theme.colors.mainBackground, alignItems: 'center', justifyContent: 'center' }}>
+                    <View style={{ flex: 1, backgroundColor: Platform.OS === 'web' ? '#0E0E0E' : theme.colors.mainBackground, alignItems: 'center', justifyContent: 'center' }}>
                         <View style={{
                             flex: 1,
                             width: '100%',
-                            maxWidth: Platform.OS === 'web' ? 500 : '100%', // Reduced width slightly for better proportion
-                            maxHeight: Platform.OS === 'web' ? '95%' : '100%', // Simulate phone height on large screens
+                            maxWidth: Platform.OS === 'web' ? 500 : '100%',
+                            maxHeight: Platform.OS === 'web' ? '95%' : '100%',
                             backgroundColor: theme.colors.mainBackground,
-                            borderRadius: Platform.OS === 'web' ? 20 : 0, // Rounded corners for "Phone" look
-                            overflow: 'hidden', // Clip content to rounded corners
-                            // Add shadow/border on web
+                            borderRadius: Platform.OS === 'web' ? 20 : 0,
+                            overflow: 'hidden',
                             ...(Platform.OS === 'web' ? {
                                 borderWidth: 1,
                                 borderColor: '#333',
@@ -69,7 +77,7 @@ export default function RootLayout() {
                                 shadowOffset: { width: 0, height: 10 },
                                 shadowOpacity: 0.5,
                                 shadowRadius: 20,
-                                paddingBottom: 0, // No extra padding for sleek look
+                                paddingBottom: 0,
                             } : {})
                         }}>
                             <Stack
@@ -93,3 +101,4 @@ export default function RootLayout() {
         </GestureHandlerRootView>
     );
 }
+

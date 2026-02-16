@@ -1,5 +1,5 @@
-import React, { useCallback, useState } from 'react';
-import { Modal, FlatList, TouchableOpacity, ScrollView, ActivityIndicator, TextInput, View, Alert, Platform } from 'react-native';
+import React, { useCallback, useState, useEffect, useRef } from 'react';
+import { Modal, FlatList, TouchableOpacity, ScrollView, TextInput, View, Alert, Platform, Animated, Easing } from 'react-native';
 import { Box, Text, useTheme } from '../../src/presentation/theme';
 import { Button } from '../../src/presentation/components/Button';
 import { Stack, useFocusEffect } from 'expo-router';
@@ -13,6 +13,106 @@ import { GrinderRepository } from '../../src/data/repositories/GrinderRepository
 import { Grinder } from '../../src/domain/entities/Grinder';
 import { generateMockData } from '../../src/utils/mockData';
 import Markdown from 'react-native-markdown-display';
+
+const LOADING_MESSAGES = [
+    'Pulling a shot...',
+    'Dialing in the grind...',
+    'Reading the puck...',
+    'Sniffing the aroma...',
+    'Crunching extraction numbers...',
+    'Analyzing your brew...',
+    'Brewing up some advice...',
+];
+
+function CoffeeLoadingAnimation() {
+    const theme = useTheme();
+    const [messageIndex, setMessageIndex] = useState(0);
+    const fillAnim = useRef(new Animated.Value(0)).current;
+
+    useEffect(() => {
+        const loop = Animated.loop(
+            Animated.sequence([
+                Animated.timing(fillAnim, { toValue: 1, duration: 2000, easing: Easing.inOut(Easing.ease), useNativeDriver: false }),
+                Animated.delay(600),
+                Animated.timing(fillAnim, { toValue: 0, duration: 400, easing: Easing.in(Easing.ease), useNativeDriver: false }),
+                Animated.delay(300),
+            ])
+        );
+        loop.start();
+
+        const interval = setInterval(() => {
+            setMessageIndex(i => (i + 1) % LOADING_MESSAGES.length);
+        }, 2500);
+
+        return () => { loop.stop(); clearInterval(interval); };
+    }, []);
+
+    const cupHeight = 34;
+    const liquidMaxHeight = cupHeight - 6;
+    const liquidHeight = fillAnim.interpolate({ inputRange: [0, 1], outputRange: [0, liquidMaxHeight] });
+
+    return (
+        <View style={{ alignItems: 'center', paddingVertical: 20 }}>
+            <View style={{ position: 'relative', width: 56, height: 48, marginBottom: 12 }}>
+                {/* Cup body */}
+                <View style={{
+                    position: 'absolute',
+                    bottom: 6,
+                    left: 2,
+                    width: 40,
+                    height: cupHeight,
+                    backgroundColor: theme.colors.surface,
+                    borderBottomLeftRadius: 10,
+                    borderBottomRightRadius: 10,
+                    borderTopLeftRadius: 2,
+                    borderTopRightRadius: 2,
+                    overflow: 'hidden',
+                }}>
+                    {/* Coffee liquid — fills from bottom */}
+                    <Animated.View style={{
+                        position: 'absolute',
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        height: liquidHeight,
+                        backgroundColor: theme.colors.primary,
+                        borderBottomLeftRadius: 8,
+                        borderBottomRightRadius: 8,
+                    }} />
+                </View>
+
+                {/* Handle */}
+                <View style={{
+                    position: 'absolute',
+                    right: 0,
+                    bottom: 14,
+                    width: 14,
+                    height: 18,
+                    borderRadius: 9,
+                    borderWidth: 3,
+                    borderColor: theme.colors.surface,
+                    borderLeftWidth: 0,
+                }} />
+
+                {/* Saucer */}
+                <View style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: -2,
+                    width: 48,
+                    height: 6,
+                    backgroundColor: theme.colors.surface,
+                    borderRadius: 3,
+                }} />
+            </View>
+
+            <Text variant="body" color="textSecondary" marginTop="s" textAlign="center">
+                {LOADING_MESSAGES[messageIndex]}
+            </Text>
+        </View>
+    );
+}
+
 
 export default function AdvisorScreen() {
     const theme = useTheme();
@@ -238,7 +338,10 @@ export default function AdvisorScreen() {
                                 padding: theme.spacing.m,
                                 borderRadius: 8,
                                 marginBottom: theme.spacing.m,
-                            }}
+                                borderWidth: 1,
+                                borderColor: theme.colors.surface,
+                                outlineStyle: 'none',
+                            } as any}
                             placeholder="e.g. More sweetness, less acidity..."
                             placeholderTextColor={theme.colors.textSecondary}
                             value={goal}
@@ -307,7 +410,11 @@ export default function AdvisorScreen() {
                     </View>
                 </Modal>
 
-                {loading && <ActivityIndicator size="large" color={theme.colors.primary} style={{ marginTop: 20 }} />}
+                {loading && (
+                    <Box backgroundColor="cardPrimaryBackground" padding="l" borderRadius={12} marginTop="m" alignItems="center">
+                        <CoffeeLoadingAnimation />
+                    </Box>
+                )}
 
                 {advice ? (
                     <Box backgroundColor="surface" padding="m" borderRadius={8} marginTop="m">

@@ -1,4 +1,5 @@
 # BrewRef — Dokumentation
+– Max Zeitler (8403711), Elena Solodova (9388442), Zoe Bedé (xyz)
 
 > **Projekttyp:** Mobile App (Cross-Plattform)  
 > **Technologie:** Expo / React Native / TypeScript  

@@ -15,7 +15,8 @@
 5. [Architektur und Design Patterns](#5-architektur-und-design-patterns)
 6. [UML-Diagramme](#6-uml-diagramme)
 7. [Umsetzung der UI-Prinzipien nach Nielsen](#7-umsetzung-der-ui-prinzipien-nach-nielsen)
-8. [Installation und Ausführung](#8-installation-und-ausführung)
+8. [Testfälle](#8-testfälle)
+9. [Installation und Ausführung](#9-installation-und-ausführung)
 
 ---
 
@@ -695,22 +696,76 @@ Obwohl die App auf intuitive Bedienbarkeit ausgelegt ist, bietet sie kontextbezo
 
 ---
 
-## 8. Installation und Ausführung
+## 8. Testfälle
 
-### 8.1 Voraussetzungen
+Die Anwendung wird durch eine mehrstufige Teststrategie abgesichert, die von isolierten Unit Tests über Integrationstests bis hin zu System- und End-to-End-Tests reicht. Die folgende Tabelle beschreibt alle implementierten Testfälle inklusive der jeweils abgedeckten Komponenten bzw. Systemteile.
+
+### 8.1 Übersicht der Testfälle
+
+| Nr. | Testtyp | Testfall | Abgedeckte Komponenten | Datei |
+|---|---|---|---|---|
+| 1 | **Unit** | BrewBuilder — erfolgreicher Build mit allen Pflichtfeldern | `BrewBuilder`, `BrewLog` (Entity) | `test_unit.ts` |
+| 2 | **Unit** | BrewBuilder — fehlende Pflichtfelder werfen Fehler | `BrewBuilder` (Validierung) | `test_unit.ts` |
+| 3 | **Unit** | BrewBuilder — partieller Score wird mit Defaults gemerged | `BrewBuilder`, `Score` (Entity) | `test_unit.ts` |
+| 4 | **Unit** | BrewBuilder — Fluent API gibt dieselbe Instanz zurück | `BrewBuilder` (API-Design) | `test_unit.ts` |
+| 5 | **Integration** | Coffee erstellen und abrufen über Repository + DB | `CoffeeRepository` → `DatabaseService` | `test_integration.ts` |
+| 6 | **Integration** | Grinder erstellen, löschen und Konsistenz prüfen | `GrinderRepository` → `DatabaseService` | `test_integration.ts` |
+| 7 | **System** | Vollständiger Brew-Workflow über alle Schichten | `BrewBuilder` → `BrewRepository` → `CoffeeRepository` → `GrinderRepository` → `DatabaseService` | `test_system.ts` |
+| 8 | **E2E** | Dashboard laden und Navigation zum Brew Logger | Gesamtes System: Expo Web → React Native Web → UI-Rendering → Navigation | `test_e2e.spec.ts` |
+
+### 8.2 Teststruktur und Prinzipien
+
+| Prinzip | Umsetzung |
+|---|---|
+| **AAA-Muster** | Alle Tests folgen dem Arrange–Act–Assert-Muster mit klar kommentierten Abschnitten |
+| **Test-Isolation** | Unit Tests haben keine Abhängigkeiten zu Datenbank, Netzwerk oder Dateisystem |
+| **InMemoryDatabase** | Integration- und Systemtests verwenden eine eigene `InMemoryDatabase`-Klasse, die das `DBInterface` implementiert und `expo-sqlite` ersetzt |
+| **Determinismus** | Alle Tests sind deterministisch und unabhängig voneinander ausführbar |
+| **Frameworks** | Jest + ts-jest (Unit/Integration/System), Playwright (E2E) |
+
+### 8.3 Abgrenzung der Testtypen
+
+| Testtyp | Fokus | Scope | Mock-Strategie |
+|---|---|---|---|
+| Unit | Einzelne Klasse (`BrewBuilder`) | Minimal — nur Geschäftslogik | Kein Mocking nötig |
+| Integration | Zusammenspiel Repository ↔ DatabaseService | Zwei Schichten | `DatabaseService` wird durch `InMemoryDatabase` ersetzt |
+| System | Vertikaler Durchstich über alle Schichten | Builder → Repository → DB → Retrieval | Nur Infrastruktur (`expo-sqlite`) ersetzt |
+| E2E | Realer Benutzerfluss im Browser | Gesamtes System inkl. UI und Navigation | Kein Mocking — echte App im Browser |
+
+### 8.4 Testausführung
+
+```bash
+# Alle Jest-Tests (Unit + Integration + System)
+npm test
+
+# Einzelne Testtypen
+npm run test:unit
+npm run test:integration
+npm run test:system
+
+# E2E-Test (erfordert laufenden Dev-Server in separatem Terminal)
+npx expo start --web        # Terminal 1
+npm run test:e2e             # Terminal 2
+```
+
+---
+
+## 9. Installation und Ausführung
+
+### 9.1 Voraussetzungen
 
 - Node.js ≥ 18
 - npm oder yarn
 - Expo CLI (optional — `npx expo` funktioniert ebenfalls)
 
-### 8.2 Installation
+### 9.2 Installation
 
 ```bash
 cd Coffee-app
 npm install
 ```
 
-### 8.3 Starten der Anwendung
+### 9.3 Starten der Anwendung
 
 ```bash
 # Web-Version

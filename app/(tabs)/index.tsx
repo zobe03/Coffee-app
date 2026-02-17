@@ -114,73 +114,79 @@ export default function DashboardScreen() {
                     </Text>
                 </Box>
 
-                {/* Stats Grid */}
-                <Box flexDirection="row" flexWrap="wrap" gap="m" marginBottom="l">
-                    {/* Beans Stashed */}
-                    <Box
-                        flexBasis="48%"
-                        backgroundColor="cardPrimaryBackground"
-                        padding="m"
-                        borderRadius={16}
-                        alignItems="flex-start"
-                        justifyContent="space-between"
-                        height={110}
-                    >
-                        <MaterialCommunityIcons name="seed-outline" size={28} color={theme.colors.primary} />
-                        <Box>
-                            <Text variant="header" fontSize={24}>{beansCount}</Text>
-                            <Text variant="caption" color="textSecondary">Beans Stashed</Text>
+                {/* Stats Grid — 2×2 */}
+                <Box marginBottom="l">
+                    {/* Row 1 */}
+                    <Box flexDirection="row" gap="m" marginBottom="m">
+                        {/* Beans Stashed */}
+                        <Box
+                            flex={1}
+                            backgroundColor="cardPrimaryBackground"
+                            padding="m"
+                            borderRadius={16}
+                            alignItems="flex-start"
+                            justifyContent="space-between"
+                            height={110}
+                        >
+                            <MaterialCommunityIcons name="seed-outline" size={28} color={theme.colors.primary} />
+                            <Box>
+                                <Text variant="header" fontSize={24}>{beansCount}</Text>
+                                <Text variant="caption" color="textSecondary">Beans Stashed</Text>
+                            </Box>
+                        </Box>
+
+                        {/* Days Since */}
+                        <Box
+                            flex={1}
+                            backgroundColor="cardPrimaryBackground"
+                            padding="m"
+                            borderRadius={16}
+                            alignItems="flex-start"
+                            justifyContent="space-between"
+                            height={110}
+                        >
+                            <Feather name="calendar" size={26} color={theme.colors.secondary} />
+                            <Box>
+                                <Text variant="header" fontSize={24}>{daysSinceLastBrew}d</Text>
+                                <Text variant="caption" color="textSecondary">Since Last Brew</Text>
+                            </Box>
                         </Box>
                     </Box>
 
-                    {/* Days Since */}
-                    <Box
-                        flexBasis="48%"
-                        backgroundColor="cardPrimaryBackground"
-                        padding="m"
-                        borderRadius={16}
-                        alignItems="flex-start"
-                        justifyContent="space-between"
-                        height={110}
-                    >
-                        <Feather name="calendar" size={26} color={theme.colors.secondary} />
-                        <Box>
-                            <Text variant="header" fontSize={24}>{daysSinceLastBrew}d</Text>
-                            <Text variant="caption" color="textSecondary">Since Last Brew</Text>
+                    {/* Row 2 */}
+                    <Box flexDirection="row" gap="m">
+                        {/* Total Brews */}
+                        <Box
+                            flex={1}
+                            backgroundColor="cardPrimaryBackground"
+                            padding="m"
+                            borderRadius={16}
+                            alignItems="flex-start"
+                            justifyContent="space-between"
+                            height={110}
+                        >
+                            <MaterialCommunityIcons name="coffee-outline" size={28} color={theme.colors.accent} />
+                            <Box>
+                                <Text variant="header" fontSize={24}>{totalBrews}</Text>
+                                <Text variant="caption" color="textSecondary">Total Brews</Text>
+                            </Box>
                         </Box>
-                    </Box>
 
-                    {/* Total Brews */}
-                    <Box
-                        flexBasis="48%"
-                        backgroundColor="cardPrimaryBackground"
-                        padding="m"
-                        borderRadius={16}
-                        alignItems="flex-start"
-                        justifyContent="space-between"
-                        height={110}
-                    >
-                        <MaterialCommunityIcons name="coffee-outline" size={28} color={theme.colors.accent} />
-                        <Box>
-                            <Text variant="header" fontSize={24}>{totalBrews}</Text>
-                            <Text variant="caption" color="textSecondary">Total Brews</Text>
-                        </Box>
-                    </Box>
-
-                    {/* Top Coffee */}
-                    <Box
-                        flexBasis="48%"
-                        backgroundColor="cardPrimaryBackground"
-                        padding="m"
-                        borderRadius={16}
-                        alignItems="flex-start"
-                        justifyContent="space-between"
-                        height={110}
-                    >
-                        <MaterialCommunityIcons name="trophy-outline" size={28} color="#FFD700" />
-                        <Box>
-                            <Text variant="subheader" fontSize={18} numberOfLines={1}>{topCoffeeName}</Text>
-                            <Text variant="caption" color="textSecondary">Top Coffee</Text>
+                        {/* Top Coffee */}
+                        <Box
+                            flex={1}
+                            backgroundColor="cardPrimaryBackground"
+                            padding="m"
+                            borderRadius={16}
+                            alignItems="flex-start"
+                            justifyContent="space-between"
+                            height={110}
+                        >
+                            <MaterialCommunityIcons name="trophy-outline" size={28} color="#FFD700" />
+                            <Box>
+                                <Text variant="subheader" fontSize={18} numberOfLines={1}>{topCoffeeName}</Text>
+                                <Text variant="caption" color="textSecondary">Top Coffee</Text>
+                            </Box>
                         </Box>
                     </Box>
                 </Box>

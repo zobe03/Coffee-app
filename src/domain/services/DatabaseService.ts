@@ -14,12 +14,11 @@ class WebDatabaseAdapter implements DBInterface {
         const table = this.getTableName(sql);
         if (!table) return [];
         const data = this.getData(table);
-        // Very basic filtering if WHERE id = ?
-        if (sql.toLowerCase().includes('where id =')) {
+        // Basic filtering for WHERE id = ?
+        if (sql.toLowerCase().includes('where id =') && params.length > 0) {
             const id = params[0];
             return data.filter((item: any) => item.id === id) as T[];
         }
-        // Basic sorting for brew_logs (descending date/id) if needed, but repo handles sorting usually
         return data as T[];
     }
 
@@ -37,30 +36,31 @@ class WebDatabaseAdapter implements DBInterface {
         let lastId = 0;
 
         if (operation === 'INSERT') {
-            // Simple mapping: we assume params match the order of columns in schema
-            // BUT repositories use named columns.
-            // We'll create a simple object. ID is auto-increment.
             lastId = this.getLastId(table) + 1;
             const newItem: any = { id: lastId };
 
-            // Very naive parser for: INSERT INTO table (col1, col2) VALUES (?, ?)
-            const columnsMatch = sql.match(/\(([\s\S]*?)\)/);
+            // Extract columns: find the FIRST parenthesized group AFTER the table name
+            // SQL: INSERT INTO table_name (col1, col2, ...) VALUES (?, ?, ...)
+            const afterTable = sql.substring(sql.toLowerCase().indexOf(table.toLowerCase()) + table.length);
+            const columnsMatch = afterTable.match(/\(([^)]+)\)/);
             if (columnsMatch) {
                 const columns = columnsMatch[1].split(',').map(c => c.trim());
                 columns.forEach((col, index) => {
-                    newItem[col] = params[index];
+                    if (index < params.length) {
+                        newItem[col] = params[index];
+                    }
                 });
             }
             data.push(newItem);
             this.saveData(table, data);
             this.saveLastId(table, lastId);
         } else if (operation === 'DELETE') {
-            if (sql.toLowerCase().includes('where id =')) {
+            if (sql.toLowerCase().includes('where id =') && params.length > 0) {
                 const id = params[0];
                 data = data.filter((item: any) => item.id !== id);
                 this.saveData(table, data);
             } else {
-                // DELETE FROM table (no WHERE) — wipe all rows
+                // DELETE FROM table (no WHERE) — wipe all rows and reset counter
                 this.saveData(table, []);
                 this.saveLastId(table, 0);
             }
@@ -71,23 +71,31 @@ class WebDatabaseAdapter implements DBInterface {
         return { lastInsertRowId: lastId };
     }
 
-    async execAsync(sql: string): Promise<void> {
-        // No-op for web (create tables logic handled dynamically or ignored)
-        // We can just init empty arrays in storage if missing
+    async execAsync(_sql: string): Promise<void> {
+        // Initialize empty arrays in localStorage if missing
         if (!localStorage.getItem('coffees')) localStorage.setItem('coffees', '[]');
         if (!localStorage.getItem('grinders')) localStorage.setItem('grinders', '[]');
         if (!localStorage.getItem('brew_logs')) localStorage.setItem('brew_logs', '[]');
     }
 
     private getTableName(sql: string): string | null {
-        // extracts table name roughly
         const match = sql.match(/(FROM|INTO|UPDATE)\s+(\w+)/i);
         return match ? match[2] : null;
     }
 
     private getData(table: string): any[] {
         const json = localStorage.getItem(table);
-        return json ? JSON.parse(json) : [];
+        if (!json) return [];
+        try {
+            const parsed = JSON.parse(json);
+            if (!Array.isArray(parsed)) return [];
+            // Filter out corrupt entries (must have an id)
+            return parsed.filter((item: any) => item != null && typeof item === 'object' && item.id != null);
+        } catch {
+            // Corrupt localStorage — reset this table
+            localStorage.removeItem(table);
+            return [];
+        }
     }
 
     private saveData(table: string, data: any[]) {
@@ -96,7 +104,7 @@ class WebDatabaseAdapter implements DBInterface {
 
     private getLastId(table: string): number {
         const id = localStorage.getItem(`${table}_last_id`);
-        return id ? parseInt(id) : 0;
+        return id ? parseInt(id, 10) || 0 : 0;
     }
 
     private saveLastId(table: string, id: number) {

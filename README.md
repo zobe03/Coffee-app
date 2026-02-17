@@ -1,44 +1,78 @@
-# BrewRef — Specialty Coffee Logging App
+# BrewRef — Dokumentation
 
-**BrewRef** ist eine Cross-Plattform-App (iOS, Android, Web) zum Loggen, Analysieren und Verbessern von Kaffee-Brühvorgängen. Die App folgt dem Designprinzip "Industrial Zen" mit einer dunklen, minimalistischen Ästhetik.
+> **Projekttyp:** Mobile App (Cross-Plattform)  
+> **Technologie:** Expo / React Native / TypeScript  
+> **Plattformen:** iOS · Android · Web  
 
 ---
 
 ## Inhaltsverzeichnis
 
-1. [Technologie-Stack](#technologie-stack)
-2. [Projektstruktur](#projektstruktur)
-3. [Anforderungen (FR & NFR)](#anforderungen-fr--nfr)
-4. [Qualitätsanforderungen](#qualitätsanforderungen)
-5. [Architektur und Design Patterns](#architektur-und-design-patterns)
-6. [UML-Diagramme](#uml-diagramme)
-7. [Umsetzung der UI-Prinzipien](#umsetzung-der-ui-prinzipien)
-8. [Installation & Start](#installation--start)
+1. [Einleitung](#1-einleitung)
+2. [Technologie-Stack](#2-technologie-stack)
+3. [Projektstruktur](#3-projektstruktur)
+4. [Anforderungen](#4-anforderungen)
+5. [Architektur und Design Patterns](#5-architektur-und-design-patterns)
+6. [UML-Diagramme](#6-uml-diagramme)
+7. [Umsetzung der UI-Prinzipien nach Nielsen](#7-umsetzung-der-ui-prinzipien-nach-nielsen)
+8. [Installation und Ausführung](#8-installation-und-ausführung)
 
 ---
 
-## Technologie-Stack
+## 1. Einleitung
 
-| Komponente | Technologie |
+### 1.1 Motivation
+
+Specialty Coffee hat in den letzten Jahren eine enorme Verbreitung erfahren. Home-Baristas investieren in hochwertige Mühlen, Espressomaschinen und sortenreine Bohnen — doch die **systematische Erfassung und Auswertung** ihrer Brühversuche erfolgt häufig nur handschriftlich oder gar nicht. Ohne strukturierte Daten lassen sich Extraktionsprobleme schwer nachvollziehen und Verbesserungen nur zufällig erzielen.
+
+### 1.2 Zielsetzung
+
+**BrewRef** löst dieses Problem durch eine Cross-Plattform-App, die den gesamten Workflow eines Espresso-Zubereitungsprozesses digital abbildet:
+
+- **Erfassung** von Rezeptdaten, Sensorik und Equipment pro Brühvorgang
+- **Verwaltung** von Kaffeebohnen und Mühlen als wiederverwendbare Stammdaten
+- **Analyse** durch einen KI-basierten Brew Doctor, der auf Basis der konkreten Brühdaten Optimierungsvorschläge generiert
+- **Visualisierung** von Statistiken und Brühverlauf auf einem Dashboard
+
+Die App folgt dem Designkonzept **„Industrial Zen"** — eine dunkle, minimalistische Ästhetik mit warmen Espresso-Akzentfarben, die eine ruhige und fokussierte Benutzererfahrung erzeugt.
+
+### 1.3 Funktionsumfang
+
+| Bereich | Funktionen |
 |---|---|
-| Framework | Expo SDK 54, React Native 0.81, TypeScript |
-| Navigation | Expo Router v6 (dateibasiertes Tab-Layout) |
-| Styling / Design System | Shopify Restyle (Theme-basiert) |
-| Datenbank | `expo-sqlite` (nativ) / `localStorage`-Adapter (Web) |
-| KI-Integration | Google Generative AI (Gemini 3 Flash Preview) |
-| Typografie | Inter (UI), JetBrains Mono (Zahlenwerte) via `expo-font` + `@expo-google-fonts` |
-| Grafiken | `react-native-svg` (Taste Wheel) |
-| Animationen & Haptik | `react-native-reanimated`, `expo-haptics`, React Native `Animated` API |
-| Gestensteuerung | `react-native-gesture-handler` (Swipe-to-Delete) |
+| Brew Logging | Rezeptparameter (Dose, Yield, Time, Temp, Grind), Shot-Timer, Geschmacksprofil (Body, Acidity, Bitterness, Taste Notes) |
+| Stammdaten | CRUD-Operationen für Kaffeebohnen und Mühlen |
+| Analyse | KI-Berater (Gemini), strukturierte Diagnose mit Anpassungsempfehlungen |
+| Dashboard | Statistiken (Beans Stashed, Total Brews, Top Coffee), Last-Brew-Karte |
+| Plattform | iOS, Android, Web aus einer Codebasis |
 
 ---
 
-## Projektstruktur
+## 2. Technologie-Stack
+
+| Komponente | Technologie | Begründung |
+|---|---|---|
+| Framework | Expo SDK 54, React Native 0.81, TypeScript | Cross-Plattform aus einer Codebasis; TypeScript für Typsicherheit |
+| Navigation | Expo Router v6 | Dateibasiertes Routing, vergleichbar mit Next.js |
+| Design System | Shopify Restyle | Theme-basiertes Styling mit typsicheren Tokens |
+| Datenbank | `expo-sqlite` (nativ) / `localStorage` (Web) | Lokale Persistenz ohne Backend; Adapter-Pattern für Plattformunabhängigkeit |
+| KI-Integration | Google Generative AI (Gemini 3 Flash Preview) | Kontextbasierte Analyse von Brühdaten |
+| Typografie | Inter, JetBrains Mono via `expo-font` | Inter für UI-Text, JetBrains Mono für numerische Werte |
+| Grafiken | `react-native-svg` | Vektorgrafik-Rendering für das Taste Wheel |
+| Animationen | `react-native-reanimated`, `Animated` API | Performante UI-Animationen (GrindSelector-Snap, Cup-Filling) |
+| Haptik | `expo-haptics` | Haptisches Feedback bei Interaktionen (nur nativ) |
+| Gestensteuerung | `react-native-gesture-handler` | Swipe-to-Delete auf Listeneinträgen |
+
+---
+
+## 3. Projektstruktur
+
+Das Projekt folgt einer klaren Schichtentrennung. Die Ordnerstruktur spiegelt die logische Architektur wider:
 
 ```
 Coffee-app/
 ├── app/                          # Navigation Layer (Expo Router)
-│   ├── _layout.tsx               # Root-Layout mit DB-Initialisierung, Font-Loading, Web-Container
+│   ├── _layout.tsx               # Root-Layout: DB-Init, Font-Loading, Web-Container
 │   └── (tabs)/
 │       ├── _layout.tsx           # Tab-Navigator (7 Tabs)
 │       ├── index.tsx             # Home / Dashboard
@@ -46,39 +80,39 @@ Coffee-app/
 │       ├── history.tsx           # Brühverlauf
 │       ├── coffees.tsx           # Kaffee-Verwaltung
 │       ├── grinders.tsx          # Mühlen-Verwaltung
-│       └── doctor.tsx            # KI-Berater
+│       └── doctor.tsx            # KI-Berater (Brew Doctor)
 │
 └── src/
     ├── presentation/             # UI-Schicht
     │   ├── theme/index.ts        # Shopify Restyle Theme (Farben, Fonts, Spacing)
     │   ├── components/           # Wiederverwendbare UI-Komponenten
-    │   │   ├── GrindSelector     # Scrollbarer Mahlgrad-Selector
-    │   │   ├── BodySelector      # Body-Auswahl (Light/Medium/Heavy)
-    │   │   ├── TasteWheel        # SVG-Geschmacksrad
+    │   │   ├── GrindSelector     # Scrollbarer Mahlgrad-Selector mit Snap
+    │   │   ├── BodySelector      # Body-Auswahl (Light / Medium / Heavy)
+    │   │   ├── TasteWheel        # SVG-Geschmacksrad (6 Kategorien)
     │   │   ├── SelectionModal    # Bottom-Sheet Auswahl-Modal
     │   │   ├── ScaleSlider       # Gradient-Slider (0–10)
     │   │   └── Button            # Theme-basierter Button
-    │   └── screens/              # Vollbild-Komponenten
+    │   └── screens/              # Vollbild-Komponenten (Manage-Screens)
     │       ├── ManageCoffeesScreen
     │       └── ManageGrindersScreen
     │
-    ├── domain/                   # Domänen-/Geschäftslogik-Schicht
-    │   ├── entities/             # Datenmodelle (Interfaces)
-    │   │   ├── Coffee.ts
-    │   │   ├── Grinder.ts
-    │   │   └── BrewLog.ts        # Inkl. Score-Interface
+    ├── domain/                   # Domänen- / Geschäftslogik-Schicht
+    │   ├── entities/             # Datenmodelle (TypeScript-Interfaces)
+    │   │   ├── Coffee.ts         # Kaffeebohnen-Interface
+    │   │   ├── Grinder.ts        # Mühlen-Interface
+    │   │   └── BrewLog.ts        # Brühvorgang-Interface inkl. Score
     │   ├── services/
-    │   │   ├── DatabaseService   # Singleton – DB-Verwaltung + WebDatabaseAdapter
-    │   │   ├── AIService         # Singleton – Gemini-API
-    │   │   └── SyntheticDataFactory # Seed-Daten (Factory)
+    │   │   ├── DatabaseService   # Singleton – DB-Verwaltung + Web-Adapter
+    │   │   ├── AIService         # Singleton – Gemini-API-Client
+    │   │   └── SyntheticDataFactory  # Factory für Seed-/Testdaten
     │   └── builders/
-    │       └── BrewBuilder       # Builder-Pattern für BrewLog
+    │       └── BrewBuilder       # Builder-Pattern für BrewLog-Objekte
     │
     ├── data/                     # Datenzugriffs-Schicht
     │   └── repositories/
-    │       ├── CoffeeRepository
-    │       ├── GrinderRepository
-    │       └── BrewRepository
+    │       ├── CoffeeRepository  # CRUD für coffees-Tabelle
+    │       ├── GrinderRepository # CRUD für grinders-Tabelle
+    │       └── BrewRepository    # CRUD für brew_logs-Tabelle
     │
     └── utils/
         └── mockData.ts           # Generierung von Testdaten
@@ -86,86 +120,74 @@ Coffee-app/
 
 ---
 
-## Anforderungen (FR & NFR)
+## 4. Anforderungen
 
-Die App erfüllt **acht funktionale** und **drei nicht-funktionale** Anforderungen:
+### 4.1 Funktionale Anforderungen
 
 | ID | Anforderungstyp | Beschreibung |
 |---|---|---|
-| FA1 | Funktional | **Brew Logging** — Vollständige Erfassung eines Brühvorgangs mit Rezeptdaten (Dose In/Out, Time, Temperature, Grind Setting). Umgesetzt in `log.tsx` und `BrewBuilder`. |
-| FA2 | Funktional | **Kaffee-Verwaltung (CRUD)** — Kaffeebohnen anlegen, anzeigen und löschen mit Metadaten (Herkunft, Sorte, Prozess, Röstdatum). Umgesetzt in `ManageCoffeesScreen` und `CoffeeRepository`. |
-| FA3 | Funktional | **Mühlen-Verwaltung (CRUD)** — Kaffeemühlen anlegen, anzeigen und löschen mit Marke, Modell und Beschreibung. Umgesetzt in `ManageGrindersScreen` und `GrinderRepository`. |
-| FA4 | Funktional | **Brühverlauf** — Chronologische Anzeige aller Brühvorgänge mit Detailansicht (Modal) und Swipe-to-Delete. Umgesetzt in `history.tsx`. |
-| FA5 | Funktional | **KI-basierte Brühberatung** — Analyse einzelner Brühvorgänge mit Gemini-KI inkl. Zielformulierung. Strukturierte Antwort (Diagnose → Anpassungen → Ergebnis). Umgesetzt in `doctor.tsx` und `AIService`. |
-| FA6 | Funktional | **Shot-Timer** — Integrierter Timer mit Start/Stop/Reset und 0,1-Sekunden-Genauigkeit, automatische Übernahme der gestoppten Zeit. Umgesetzt in `log.tsx`. |
-| FA7 | Funktional | **Geschmacksprofil-Erfassung** — Body-Auswahl über 3 Zonen (Light/Medium/Heavy), Acidity/Bitterness-Slider (0–10), und Taste Wheel mit 6 Kategorien und Sub-Notes. Umgesetzt in `BodySelector`, `ScaleSlider` und `TasteWheel`. |
-| FA8 | Funktional | **Dashboard mit Statistiken** — Übersichtsseite mit Beans Stashed, Days Since Last Brew, Total Brews, Top Coffee und Last-Brew-Card. Umgesetzt in `index.tsx`. |
-| NFA1 | Nicht-funktional | **Cross-Plattform** — Lauffähig auf iOS, Android und Web aus einer Codebasis. `WebDatabaseAdapter` als plattformspezifische Abstraktion für `localStorage`; `Platform.OS`-Abfragen für Layout-Anpassungen (Phone-Frame-Container auf Web, plattformspezifische Dialoge). |
-| NFA2 | Nicht-funktional | **Offline-First** — Alle Daten lokal gespeichert (`expo-sqlite` nativ, `localStorage` Web). Keine Internetverbindung für Kernfunktionen nötig; KI-Feature explizit als Online-Feature. |
-| NFA3 | Nicht-funktional | **Responsiveness & Performance** — Flüssige UI mit haptischem Feedback (`expo-haptics`), Snap-Animationen (`snapToInterval`, `decelerationRate="fast"`), und Custom Loading-Animationen (Coffee-Cup-Filling via `Animated` API). |
+| FA1 | Funktional | **Brew Logging** — Vollständige Erfassung eines Brühvorgangs mit Rezeptparametern (Dose In, Dose Out, Extraktionszeit, Temperatur, Mahlgrad). Der `BrewBuilder` validiert alle Pflichtfelder beim Speichern. |
+| FA2 | Funktional | **Kaffee-Verwaltung (CRUD)** — Anlegen, Anzeigen und Löschen von Kaffeebohnen mit Metadaten (Herkunft, Sorte, Aufbereitungsverfahren, Röstdatum). Umgesetzt durch `ManageCoffeesScreen` und `CoffeeRepository`. |
+| FA3 | Funktional | **Mühlen-Verwaltung (CRUD)** — Anlegen, Anzeigen, Bearbeiten und Löschen von Kaffeemühlen mit Marke, Modell und Beschreibung. Umgesetzt durch `ManageGrindersScreen` und `GrinderRepository`. |
+| FA4 | Funktional | **Brühverlauf** — Chronologische Anzeige aller gespeicherten Brühvorgänge mit Detail-Modal und Löschfunktion (Swipe-to-Delete). Umgesetzt in `history.tsx`. |
+| FA5 | Funktional | **KI-basierte Brühberatung** — Analyse eines ausgewählten Brühvorgangs durch Gemini-KI inklusive frei formulierbarer Zielstellung. Antwort in strukturiertem Format: Diagnose → Anpassungen (max. 3) → Erwartetes Ergebnis. Umgesetzt in `doctor.tsx` und `AIService`. |
+| FA6 | Funktional | **Shot-Timer** — Integrierter Timer mit Start-, Stop- und Reset-Funktion bei 0,1-Sekunden-Genauigkeit. Die gestoppte Zeit wird automatisch in das Rezeptfeld übernommen. Umgesetzt in `log.tsx`. |
+| FA7 | Funktional | **Geschmacksprofil-Erfassung** — Mehrdimensionale sensorische Bewertung: Body-Auswahl über 3 Zonen (Light/Medium/Heavy), Acidity- und Bitterness-Slider (0–10), sowie Taste Wheel mit 6 Kategorien und Sub-Notes. Umgesetzt durch `BodySelector`, `ScaleSlider` und `TasteWheel`. |
+| FA8 | Funktional | **Dashboard mit Statistiken** — Übersichtsseite mit Kennzahlen (Beans Stashed, Days Since Last Brew, Total Brews, Top Coffee) und detaillierter Last-Brew-Karte. Umgesetzt in `index.tsx`. |
+
+### 4.2 Nicht-funktionale Anforderungen
+
+| ID | Anforderungstyp | Beschreibung |
+|---|---|---|
+| NFA1 | Nicht-funktional | **Cross-Plattform-Fähigkeit** — Die App läuft auf iOS, Android und Web aus einer einzigen Codebasis. Plattformspezifische Unterschiede werden durch den `WebDatabaseAdapter` (Adapter-Pattern) und `Platform.OS`-Abfragen in Layout und Dialogen abstrahiert. |
+| NFA2 | Nicht-funktional | **Offline-First** — Alle Kernfunktionen arbeiten ohne Internetverbindung. Daten werden lokal persistiert (`expo-sqlite` auf nativen Plattformen, `localStorage` im Web). Lediglich die KI-Beratung erfordert eine Online-Verbindung. |
+| NFA3 | Nicht-funktional | **Responsiveness und Performance** — Flüssige Interaktionen durch haptisches Feedback (`expo-haptics`), Snap-Animationen (`snapToInterval`, `decelerationRate="fast"`), Custom Loading-Animationen (animiertes Cup-Filling via `Animated` API) und optimierte Scroll-Performance (`scrollEventThrottle={16}`). |
 
 ---
 
-## Qualitätsanforderungen
+## 5. Architektur und Design Patterns
 
-### UI-Konsistenz
+### 5.1 Schichtenarchitektur (Layered Architecture)
 
-- **Globales Theme-System** (`src/presentation/theme/index.ts`): Alle Farben, Abstände, Textvarianten und Font-Familien (Inter, JetBrains Mono) sind zentral über Shopify Restyle definiert. Keine hartcodierten Styles in Screens — alle Komponenten nutzen `Box`, `Text` und `useTheme()`.
-- **Einheitliche Kartenstile**: Alle Listenelemente (Brews, Coffees, Grinders) verwenden identische `cardPrimaryBackground`-Farbgebung, `borderRadius`, und Spacing.
-- **Konsistente Navigationsstruktur**: Alle Tabs verwenden das gleiche Header-Styling und Tab-Bar-Konfiguration.
-
-### Fehlerfreiheit
-
-- **Validierung**: `BrewBuilder.build()` wirft einen Error bei fehlenden Pflichtfeldern (coffeeId, grinderId, doseIn, doseOut, timeSeconds).
-- **Graceful Error Handling**: `DatabaseService.initialize()` fängt Fehler ab und zeigt eine Fehlerseite. `AIService.getAdvice()` fängt API-Fehler und gibt eine fallback-Nachricht zurück.
-- **Löschen mit Bestätigung**: `history.tsx` und `doctor.tsx` verwenden plattformspezifische Dialoge (`Alert.alert()` nativ, `confirm()` Web) vor destruktiven Aktionen. Nuke-Funktion nutzt `databaseService.nukeAllData()` für atomares Löschen aller Tabellen.
-
-### Cross-Plattform-Ausführbarkeit
-
-- **Native**: `expo-sqlite` für persistente Datenhaltung, `expo-haptics` für haptisches Feedback.
-- **Web**: `WebDatabaseAdapter` als Adapter für `localStorage`; `Platform.OS === 'web'`-Abfragen für Layout-Anpassungen (Phone-Frame-Container, angepasste Tab-Bar-Höhe, deaktivierte Haptics).
-- **Universell**: Alle UI-Komponenten verwenden React Native Primitives, die automatisch auf allen Plattformen rendern.
-
----
-
-## Architektur und Design Patterns
-
-### Schichtenarchitektur (Layered Architecture)
-
-Die App verwendet eine **Drei-Schichten-Architektur** mit strikter Abhängigkeitsrichtung:
+Die Anwendung ist in eine **Drei-Schichten-Architektur** gegliedert, wobei die Abhängigkeitsrichtung strikt eingehalten wird:
 
 ```
-┌─────────────────────────────────────────┐
-│  Presentation Layer (UI)                │
-│  app/, src/presentation/                │
-│  Screens, Components, Theme, Navigation │
-├─────────────────────────────────────────┤
-│  Domain Layer (Geschäftslogik)          │
-│  src/domain/                            │
-│  Entities, Services, Builders           │
-├─────────────────────────────────────────┤
-│  Data Layer (Datenzugriff)              │
-│  src/data/                              │
-│  Repositories → DatabaseService         │
-└─────────────────────────────────────────┘
+┌─────────────────────────────────────────────────┐
+│  Presentation Layer (UI)                        │
+│  app/, src/presentation/                        │
+│  Screens, Components, Theme, Navigation         │
+├─────────────────────────────────────────────────┤
+│  Domain Layer (Geschäftslogik)                  │
+│  src/domain/                                    │
+│  Entities (Interfaces), Services, Builders      │
+├─────────────────────────────────────────────────┤
+│  Data Layer (Datenzugriff)                      │
+│  src/data/                                      │
+│  Repositories → DatabaseService                 │
+└─────────────────────────────────────────────────┘
 ```
 
-**Abhängigkeitsrichtung:** Presentation → Domain ← Data. Die Domain-Schicht hat keine Abhängigkeiten zu UI- oder Datenbankdetails (die Entities sind reine Interfaces).
+**Abhängigkeitsrichtung:** Presentation → Domain ← Data.  
+Die Domain-Schicht definiert die Entities als reine TypeScript-Interfaces ohne Abhängigkeiten zu UI- oder Datenbankdetails — sie bildet den stabilen Kern der Anwendung.
 
-Zusätzlich wird das **Repository-Pattern** als Architekturmuster eingesetzt: `CoffeeRepository`, `GrinderRepository` und `BrewRepository` kapseln sämtliche SQL-Logik und bieten den Screens eine saubere API (`getAll()`, `getById()`, `create()`, `delete()`).
+Ergänzend wird das **Repository-Pattern** als Architekturmuster eingesetzt. Die Klassen `CoffeeRepository`, `GrinderRepository` und `BrewRepository` kapseln sämtliche SQL-Logik und exponieren eine einheitliche API (`getAll()`, `getById()`, `create()`, `delete()`), sodass die Screens ausschließlich über diese Abstraktionsschicht auf Daten zugreifen.
 
-### Design Patterns
+### 5.2 Design Patterns
 
-Die App setzt **vier** Design Patterns ein:
+Im Folgenden werden die vier eingesetzten Design Patterns dokumentiert.
 
-#### 1. Singleton Pattern
+#### 5.2.1 Singleton Pattern
 
-Das Singleton Pattern wurde für die zentrale Ressourcenverwaltung eingesetzt und mithilfe der Klassen `DatabaseService` und `AIService` umgesetzt. Beide verwenden eine private `constructor`-Methode und eine statische `getInstance()`-Methode, die sicherstellt, dass nur eine einzige Instanz existiert. Dies verhindert Ressourcenkonflikte bei Datenbankverbindungen und KI-API-Clients.
+Das **Singleton Pattern** wurde für die zentrale Ressourcenverwaltung eingesetzt und mithilfe der Klassen `DatabaseService` und `AIService` umgesetzt. Beide verwenden eine private `constructor`-Methode und eine statische `getInstance()`-Methode, die sicherstellt, dass zur Laufzeit nur eine einzige Instanz existiert.
+
+**Begründung:** Es darf nur eine Datenbankverbindung und ein KI-API-Client existieren, um Ressourcenkonflikte und inkonsistente Zustände zu vermeiden.
 
 ```typescript
 class DatabaseService {
     private static instance: DatabaseService;
+    private db: DBInterface | null = null;
     private constructor() { }
+
     public static getInstance(): DatabaseService {
         if (!DatabaseService.instance) {
             DatabaseService.instance = new DatabaseService();
@@ -176,9 +198,11 @@ class DatabaseService {
 export const databaseService = DatabaseService.getInstance();
 ```
 
-#### 2. Builder Pattern
+#### 5.2.2 Builder Pattern
 
-Das Builder Pattern wurde für die schrittweise Konstruktion komplexer `BrewLog`-Objekte eingesetzt und mithilfe der Klasse `BrewBuilder` umgesetzt. Der Builder bietet eine Fluent-API (`setEquipment()`, `setRecipe()`, `setGrindSetting()`, `setScore()`) und validiert beim Aufruf von `build()` alle Pflichtfelder, bevor das finale Objekt erzeugt wird.
+Das **Builder Pattern** wurde für die schrittweise Konstruktion komplexer `BrewLog`-Objekte eingesetzt und mithilfe der Klasse `BrewBuilder` umgesetzt. Der Builder bietet eine Fluent-API mit den Methoden `setEquipment()`, `setRecipe()`, `setGrindSetting()` und `setScore()`. Beim Aufruf von `build()` werden alle Pflichtfelder validiert, bevor das finale Objekt erzeugt wird.
+
+**Begründung:** Ein `BrewLog` besitzt sowohl Pflicht- als auch optionale Felder. Der Builder trennt die Konstruktion von der Repräsentation und stellt sicher, dass nur valide Objekte erzeugt werden.
 
 ```typescript
 const brew = new BrewBuilder()
@@ -186,12 +210,14 @@ const brew = new BrewBuilder()
     .setRecipe(18, 36, 30, 93)
     .setGrindSetting('22 Clicks')
     .setScore({ body: 1, acidity: 7, bitterness: 3, tasteNotes: ['Jasmine'] })
-    .build(); // Validierung + Datum-Erzeugung
+    .build(); // → Validierung + Datum-Erzeugung
 ```
 
-#### 3. Adapter Pattern
+#### 5.2.3 Adapter Pattern
 
-Das Adapter Pattern wurde für die plattformübergreifende Datenbankabstraktion eingesetzt und mithilfe des Interface `DBInterface` und der Klasse `WebDatabaseAdapter` umgesetzt. Der `WebDatabaseAdapter` implementiert dasselbe Interface wie die native `expo-sqlite`-Instanz, adaptiert die Aufrufe aber auf `localStorage`. Dies ermöglicht es, denselben Repository-Code auf allen Plattformen zu verwenden.
+Das **Adapter Pattern** wurde für die plattformübergreifende Datenbankabstraktion eingesetzt und mithilfe des Interface `DBInterface` sowie der Klasse `WebDatabaseAdapter` umgesetzt. Der Adapter implementiert dasselbe Interface wie die native `expo-sqlite`-Instanz, übersetzt die Aufrufe jedoch intern auf `localStorage`-Operationen.
+
+**Begründung:** Die Web-Plattform unterstützt kein `expo-sqlite`. Durch den Adapter können alle Repositories plattformunabhängig arbeiten, ohne Kenntnis der zugrunde liegenden Speichertechnologie.
 
 ```typescript
 interface DBInterface {
@@ -201,18 +227,24 @@ interface DBInterface {
     execAsync(sql: string): Promise<void>;
 }
 
-class WebDatabaseAdapter implements DBInterface { /* localStorage-Implementierung */ }
+class WebDatabaseAdapter implements DBInterface {
+    // Intern: localStorage-basierte Implementierung
+    async getAllAsync<T>(sql: string, params: any[] = []): Promise<T[]> { /* ... */ }
+    // ...
+}
 ```
 
-#### 4. Factory Pattern
+#### 5.2.4 Factory Pattern
 
-Das Factory Pattern wurde für die Erzeugung konsistenter Testdaten eingesetzt und mithilfe der Klasse `SyntheticDataFactory` umgesetzt. Die Methode `generateEssentialData()` erzeugt zusammenhängende Entitäten (Grinder → Coffee → BrewLogs), wobei die Factory sicherstellt, dass alle Foreign Keys korrekt gesetzt sind.
+Das **Factory Pattern** wurde für die Erzeugung konsistenter Testdaten eingesetzt und mithilfe der Klasse `SyntheticDataFactory` umgesetzt. Die Methode `generateEssentialData()` erzeugt zusammenhängende Entitäten (Grinder → Coffee → BrewLogs) in der korrekten Reihenfolge, sodass alle Fremdschlüssel-Beziehungen gewahrt bleiben.
+
+**Begründung:** Die Factory kapselt die Erzeugungslogik für zusammenhängende Entitäten und stellt die referenzielle Integrität der Seed-Daten sicher.
 
 ```typescript
 class SyntheticDataFactory {
     async generateEssentialData(): Promise<void> {
         const grinderId = await this.createGrinder();   // Comandante C40
-        const coffeeId = await this.createCoffee();     // Ethiopia Yirgacheffe
+        const coffeeId  = await this.createCoffee();    // Ethiopia Yirgacheffe
         await this.createBrewLogs(grinderId, coffeeId); // Sample Brews
     }
 }
@@ -220,9 +252,11 @@ class SyntheticDataFactory {
 
 ---
 
-## UML-Diagramme
+## 6. UML-Diagramme
 
-### 1. Klassendiagramm
+### 6.1 Klassendiagramm
+
+Das Klassendiagramm zeigt alle relevanten Klassen und Interfaces der Anwendung mit ihren Beziehungen. Die Entities (`Coffee`, `Grinder`, `BrewLog`, `Score`) sind als Interfaces modelliert, die Services als Singletons, und die Repositories als datenzugriffsschicht.
 
 ```mermaid
 classDiagram
@@ -285,6 +319,7 @@ classDiagram
         -getLastId(table): number
         -saveLastId(table, id)
         +getAllAsync(sql, params): Promise~T[]~
+        +getFirstAsync(sql, params): Promise~T|null~
         +runAsync(sql, params): Promise~lastInsertRowId~
         +execAsync(sql): Promise~void~
     }
@@ -359,12 +394,12 @@ classDiagram
     }
 
     BrewLog *-- Score : enthält
-    BrewLog --> Coffee : coffeeId
-    BrewLog --> Grinder : grinderId
+    BrewLog --> Coffee : referenziert via coffeeId
+    BrewLog --> Grinder : referenziert via grinderId
 
     DBInterface <|.. WebDatabaseAdapter : implements
     DatabaseService --> DBInterface : nutzt
-    DatabaseService --> WebDatabaseAdapter : erzeugt (Web)
+    DatabaseService --> WebDatabaseAdapter : erzeugt auf Web
 
     CoffeeRepository --> DatabaseService : nutzt
     GrinderRepository --> DatabaseService : nutzt
@@ -377,21 +412,23 @@ classDiagram
     SyntheticDataFactory --> BrewRepository : nutzt
 ```
 
-### 2. Komponentendiagramm
+### 6.2 Komponentendiagramm
+
+Das Komponentendiagramm visualisiert die Schichtenarchitektur und die Abhängigkeiten zwischen den Komponenten sowie zu externen Systemen.
 
 ```mermaid
 graph TB
     subgraph Presentation["Presentation Layer"]
         direction TB
-        RootLayout["_layout.tsx<br/>(Root-Layout, Font-Loading, DB-Init)"]
+        RootLayout["_layout.tsx<br/>(Root: DB-Init, Fonts, Web-Container)"]
         TabLayout["(tabs)/_layout.tsx<br/>(Tab-Navigator)"]
         
         subgraph Screens["Screens"]
             Home["index.tsx<br/>Dashboard"]
             Log["log.tsx<br/>Brew Logger"]
             History["history.tsx<br/>Brühverlauf"]
-            Coffees["coffees.tsx"]
-            Grinders["grinders.tsx"]
+            Coffees["coffees.tsx<br/>Kaffee-Verwaltung"]
+            Grinders["grinders.tsx<br/>Mühlen-Verwaltung"]
             Doctor["doctor.tsx<br/>KI-Berater"]
         end
 
@@ -404,20 +441,20 @@ graph TB
             Btn["Button"]
         end
 
-        Theme["theme/index.ts<br/>Shopify Restyle"]
+        Theme["theme/index.ts<br/>(Restyle Theme)"]
     end
 
     subgraph Domain["Domain Layer"]
         direction TB
         subgraph Entities["Entities (Interfaces)"]
-            Coffee2["Coffee"]
-            Grinder2["Grinder"]
-            BrewLog2["BrewLog / Score"]
+            CoffeeE["Coffee"]
+            GrinderE["Grinder"]
+            BrewLogE["BrewLog / Score"]
         end
         
-        subgraph Services["Services"]
-            DBService["DatabaseService<br/>(Singleton)"]
-            AIServ["AIService<br/>(Singleton)"]
+        subgraph Services["Services (Singletons)"]
+            DBService["DatabaseService"]
+            AIServ["AIService"]
             SynFactory["SyntheticDataFactory"]
         end
         
@@ -433,7 +470,7 @@ graph TB
     subgraph External["Externe Systeme"]
         SQLite["expo-sqlite<br/>(Native)"]
         LocalStorage["localStorage<br/>(Web)"]
-        Gemini["Gemini API"]
+        Gemini["Google Gemini API"]
     end
 
     RootLayout --> TabLayout
@@ -451,36 +488,40 @@ graph TB
     AIServ --> Gemini
 ```
 
-### 3. Aktivitätsdiagramm — Brew Logging
+### 6.3 Aktivitätsdiagramm — Brew Logging
+
+Das Aktivitätsdiagramm modelliert den vollständigen Ablauf eines Brew-Logging-Vorgangs durch den Benutzer von der Eingabe bis zur Persistierung.
 
 ```mermaid
 flowchart TD
-    Start([Brew Logger öffnen]) --> SelectEquipment[Kaffee & Mühle auswählen]
-    SelectEquipment --> EnterRecipe[Rezeptdaten eingeben<br/>Dose In/Out, Temp, Grind]
-    EnterRecipe --> Timer{Shot-Timer nutzen?}
+    Start([Brew Logger öffnen]) --> SelectEquipment[Kaffee und Mühle auswählen<br/>via SelectionModal]
+    SelectEquipment --> EnterRecipe[Rezeptdaten eingeben<br/>Dose In, Dose Out, Temperatur, Mahlgrad]
+    EnterRecipe --> Timer{Shot-Timer<br/>verwenden?}
     
     Timer -->|Ja| StartTimer[Timer starten]
     StartTimer --> StopTimer[Timer stoppen]
-    StopTimer --> AutoFill[Zeit automatisch übernommen]
+    StopTimer --> AutoFill[Gestoppte Zeit wird<br/>automatisch übernommen]
     AutoFill --> TasteProfile
     
     Timer -->|Nein| ManualTime[Zeit manuell eingeben]
     ManualTime --> TasteProfile
 
-    TasteProfile[Geschmacksprofil erfassen<br/>Body, Acidity, Bitterness, Taste Notes]
+    TasteProfile[Geschmacksprofil erfassen<br/>BodySelector + ScaleSlider + TasteWheel]
     TasteProfile --> Save[Speichern drücken]
     
-    Save --> Validate{Validierung<br/>Coffee & Grinder<br/>ausgewählt?}
-    Validate -->|Nein| ShowError[Fehlermeldung anzeigen]
-    ShowError --> SelectEquipment
+    Save --> ValidateEquipment{Coffee und Grinder<br/>ausgewählt?}
+    ValidateEquipment -->|Nein| ShowWarning[Warnung: Bitte Equipment<br/>auswählen]
+    ShowWarning --> SelectEquipment
 
-    Validate -->|Ja| BuildBrew[BrewBuilder.build<br/>Pflichtfelder prüfen]
-    BuildBrew --> Persist[BrewRepository.create<br/>In DB speichern]
-    Persist --> Confirm[Bestätigung anzeigen<br/>Brew Logged!]
-    Confirm --> Navigate[Zurück zum Dashboard]
+    ValidateEquipment -->|Ja| BuildBrew["BrewBuilder.build()<br/>Pflichtfelder validieren"]
+    BuildBrew --> Persist["BrewRepository.create()<br/>In Datenbank speichern"]
+    Persist --> Confirm["Bestätigung: 'Brew Logged!'"]
+    Confirm --> Navigate[Navigation zurück<br/>zum Dashboard]
 ```
 
-### 4. Sequenzdiagramm — KI-Brühberatung
+### 6.4 Sequenzdiagramm — KI-Brühberatung
+
+Das Sequenzdiagramm zeigt die Interaktion zwischen den beteiligten Klassen bei der Anforderung einer KI-basierten Brühberatung.
 
 ```mermaid
 sequenceDiagram
@@ -494,7 +535,7 @@ sequenceDiagram
 
     User->>Doctor: "Get AI Advice" drücken
     activate Doctor
-    Doctor->>Doctor: Loading-Animation starten<br/>(CoffeeLoadingAnimation)
+    Doctor->>Doctor: CoffeeLoadingAnimation starten<br/>(Cup-Filling-Animation + zyklische Nachrichten)
 
     Doctor->>BrewRepo: getAll()
     BrewRepo-->>Doctor: BrewLog[]
@@ -508,14 +549,18 @@ sequenceDiagram
     Doctor->>AIService: getAdvice(currentBrew, history, goal, context)
     activate AIService
 
-    AIService->>AIService: formatBrewSummary()<br/>Prompt zusammenbauen
+    AIService->>AIService: formatBrewSummary()<br/>Prompt mit Brew-Daten aufbauen
 
     AIService->>Gemini: generateContent(prompt)
     activate Gemini
     Gemini-->>AIService: Response (Markdown)
     deactivate Gemini
 
-    AIService-->>Doctor: Advice-String (Markdown)
+    alt Erfolg
+        AIService-->>Doctor: Advice-String (Markdown)
+    else API-Fehler
+        AIService-->>Doctor: Fallback-Fehlermeldung
+    end
     deactivate AIService
 
     Doctor->>Doctor: Loading-Animation stoppen
@@ -526,135 +571,154 @@ sequenceDiagram
 
 ---
 
-## Umsetzung der UI-Prinzipien
+## 7. Umsetzung der UI-Prinzipien nach Nielsen
 
-Die App setzt alle zehn **Usability-Heuristiken nach Jakob Nielsen** konsequent um:
+Die Benutzeroberfläche wurde systematisch anhand der **zehn Usability-Heuristiken nach Jakob Nielsen** gestaltet. Im Folgenden wird für jede Heuristik dokumentiert, wie sie in der Anwendung konkret umgesetzt wird.
 
-### 1. Sichtbarkeit des Systemstatus
+### 7.1 Sichtbarkeit des Systemstatus
+
+Der Benutzer wird zu jedem Zeitpunkt über den aktuellen Zustand der Anwendung informiert.
 
 | Umsetzung | Datei |
 |---|---|
 | `ActivityIndicator` während DB-Initialisierung und Font-Loading | `_layout.tsx` |
 | `RefreshControl` mit Pull-to-Refresh auf Dashboard und History | `index.tsx`, `history.tsx` |
-| Shot-Timer zeigt Echtzeit-Sekundenanzeige (0,1s Updates) | `log.tsx` |
-| Custom Coffee-Cup-Filling-Animation mit zyklischen Nachrichten während KI-Verarbeitung | `doctor.tsx` (CoffeeLoadingAnimation) |
-| "Brew Logged!" / "Data Generated!" Bestätigungsmeldungen | `log.tsx`, `doctor.tsx` |
+| Shot-Timer mit Echtzeit-Sekundenanzeige (Aktualisierung alle 100ms) | `log.tsx` |
+| Custom Coffee-Cup-Filling-Animation mit zyklischen Statusnachrichten während KI-Verarbeitung | `doctor.tsx` |
+| Bestätigungsmeldungen nach erfolgreichen Aktionen ("Brew Logged!", "Data Generated!") | `log.tsx`, `doctor.tsx` |
 
-### 2. Übereinstimmung zwischen System und realer Welt
+### 7.2 Übereinstimmung zwischen System und realer Welt
+
+Die App verwendet konsequent die **Fachterminologie der Kaffee-Domäne**, um einen nahtlosen Übergang zwischen physischem Workflow und digitaler Erfassung zu schaffen.
 
 | Umsetzung | Datei |
 |---|---|
-| Fachterminologie der Kaffee-Domäne: Dose In/Out, Grind Setting, Body, Acidity, Shot Timer | Alle Logging-Screens |
+| Domänenspezifische Begriffe: Dose In/Out, Grind Setting, Body, Acidity, Shot Timer | Alle Logging-Screens |
 | Taste Wheel mit branchenüblichen Kategorien (Fruity, Sweet, Nutty, Spiced, Roasted, Floral) | `TasteWheel.tsx` |
-| Body-Zonen mit deskriptiven Labels: "WATERY", "TEA-LIKE", "SYRUPY", "VELVETY" | `BodySelector.tsx` |
-| GrindSelector als physische Skala (Tick-Lineal) — imitiert reale Mühlen-Einstellung | `GrindSelector.tsx` |
+| Body-Zonen mit sensorischen Deskriptoren: "WATERY", "TEA-LIKE", "SYRUPY", "VELVETY" | `BodySelector.tsx` |
+| GrindSelector als physische Skala (Tick-Lineal) — imitiert die Einstellung realer Kaffeemühlen | `GrindSelector.tsx` |
 
-### 3. Benutzerkontrolle und Freiheit
+### 7.3 Benutzerkontrolle und Freiheit
+
+Dem Benutzer wird jederzeit die Möglichkeit gegeben, Aktionen rückgängig zu machen oder den aktuellen Kontext zu verlassen.
 
 | Umsetzung | Datei |
 |---|---|
 | Tab-Navigation erlaubt freies Wechseln zwischen allen Bereichen | `(tabs)/_layout.tsx` |
-| Modals haben Close-Buttons und Backdrop-Tap zum Schließen | `SelectionModal.tsx`, `history.tsx` |
+| Modals: Close-Button und Backdrop-Tap zum Schließen | `SelectionModal.tsx`, `history.tsx` |
 | Shot-Timer: Start/Stop/Reset — volle Kontrolle über den Timer | `log.tsx` |
-| `router.back()` nach Speichern eines Brews | `log.tsx` |
-| Löschen von Brews, Coffees, Grinders jederzeit möglich | `history.tsx`, `ManageCoffeesScreen`, `ManageGrindersScreen` |
+| Automatische Navigation nach Speichern (`router.back()`) | `log.tsx` |
+| Löschen von Brews, Coffees, Grinders jederzeit möglich | `history.tsx`, Manage-Screens |
 
-### 4. Konsistenz und Standards
+### 7.4 Konsistenz und Standards
 
-| Umsetzung | Datei |
-|---|---|
-| Globales Theme mit einheitlichen Farben, Spacing, Font-Familien und Text-Varianten | `theme/index.ts` |
-| Alle Karten verwenden identische `cardPrimaryBackground` + `borderRadius` | Alle Screens |
-| Einheitliche Modale (selbes Dark-Theme, gleiche Animationsart `slide`) | `SelectionModal`, `history.tsx`, `ManageCoffeesScreen` |
-| Tab-Icons aus konsistenter Icon-Familie (MaterialCommunityIcons) | `(tabs)/_layout.tsx` |
-| Swipe-to-Delete auf Coffees UND Grinders gleich implementiert | `ManageCoffeesScreen`, `ManageGrindersScreen` |
-
-### 5. Fehlervermeidung
+Ein globales Theme-System stellt sicher, dass alle UI-Elemente einheitlich gestaltet sind.
 
 | Umsetzung | Datei |
 |---|---|
-| `BrewBuilder.build()` validiert Pflichtfelder vor Speicherung | `BrewBuilder.ts` |
-| "Please select Coffee and Grinder"-Warnung bei fehlendem Equipment | `log.tsx` |
+| Zentrales Theme mit Farben, Spacing, Font-Familien und Text-Varianten | `theme/index.ts` |
+| Einheitliche Kartenstile (`cardPrimaryBackground`, `borderRadius`) auf allen Screens | Alle Screens |
+| Konsistente Modale (Dark-Theme, Animationsart `slide`) | `SelectionModal`, Manage-Screens |
+| Tab-Icons aus einheitlicher Icon-Familie (MaterialCommunityIcons) | `(tabs)/_layout.tsx` |
+| Swipe-to-Delete identisch auf Coffees und Grinders implementiert | `ManageCoffeesScreen`, `ManageGrindersScreen` |
+
+### 7.5 Fehlervermeidung
+
+Durch Validierung, Default-Werte und Bestätigungsdialoge werden Benutzerfehler systematisch verhindert.
+
+| Umsetzung | Datei |
+|---|---|
+| `BrewBuilder.build()` validiert alle Pflichtfelder vor Speicherung | `BrewBuilder.ts` |
+| Warnung bei fehlendem Equipment ("Please select Coffee and Grinder") | `log.tsx` |
 | `GrindSelector` mit `snapToInterval` verhindert ungültige Zwischenwerte | `GrindSelector.tsx` |
-| Default-Werte für Rezeptfelder (18g in, 36g out, 30s, 93°C) | `log.tsx` |
-| Plattformspezifische Bestätigungsdialoge (`Alert.alert()` / `confirm()`) vor Datenlöschung | `history.tsx`, `doctor.tsx` |
+| Sinnvolle Default-Werte für Rezeptfelder (18g / 36g / 30s / 93°C) | `log.tsx` |
+| Plattformspezifische Bestätigungsdialoge vor destruktiven Aktionen (`Alert.alert()` nativ, `confirm()` Web) | `history.tsx`, `doctor.tsx` |
 
-### 6. Wiedererkennen statt Erinnern
+### 7.6 Wiedererkennen statt Erinnern
+
+Alle relevanten Informationen und Optionen werden direkt sichtbar dargestellt — der Benutzer muss sich nichts merken.
 
 | Umsetzung | Datei |
 |---|---|
-| `SelectionModal` zeigt alle verfügbaren Coffees/Grinders als Liste | `SelectionModal.tsx` |
-| Ausgewähltes Coffee/Grinder wird im Selector-Feld angezeigt | `log.tsx` |
-| Taste Wheel zeigt alle Kategorien visuell auf einen Blick | `TasteWheel.tsx` |
+| `SelectionModal` zeigt alle verfügbaren Coffees/Grinders als scrollbare Liste | `SelectionModal.tsx` |
+| Ausgewähltes Equipment wird im Selector-Feld angezeigt | `log.tsx` |
+| Taste Wheel zeigt alle 6 Geschmackskategorien visuell auf einen Blick | `TasteWheel.tsx` |
 | Body-Selector zeigt alle drei Optionen gleichzeitig mit Deskriptoren | `BodySelector.tsx` |
-| History-Cards zeigen Kaffee, Datum, Rezeptdaten und Geschmacksnotizen direkt | `history.tsx` |
+| History-Cards zeigen Kaffee, Datum, Rezeptdaten und Geschmacksnotizen direkt an | `history.tsx` |
 
-### 7. Flexibilität und Effizienz
+### 7.7 Flexibilität und Effizienz
+
+Die App bietet sowohl einfache Bedienung für Einsteiger als auch Abkürzungen für erfahrene Benutzer.
 
 | Umsetzung | Datei |
 |---|---|
-| Shot-Timer füllt Zeitfeld automatisch aus | `log.tsx` |
-| Pull-to-Refresh auf Dashboard und History für schnelle Aktualisierung | `index.tsx`, `history.tsx` |
-| GrindSelector: Scroll mit Snap + manuelle Eingabe möglich | `GrindSelector.tsx` |
-| Brew Doctor: Brew-Auswahl + eigene Zielformulierung | `doctor.tsx` |
-| Dev Tools: "Generate 50 Mock Brews" für schnelles Testing | `doctor.tsx` |
+| Shot-Timer füllt das Zeitfeld automatisch aus (kein manuelles Tippen nötig) | `log.tsx` |
+| Pull-to-Refresh für schnelle Aktualisierung auf Dashboard und History | `index.tsx`, `history.tsx` |
+| GrindSelector: Scroll-Interaktion mit Snap und manuelle Texteingabe möglich | `GrindSelector.tsx` |
+| Brew Doctor: Brew-Auswahl aus der Verlaufsliste + frei formulierbares Ziel | `doctor.tsx` |
+| Dev Tools: "Generate 50 Mock Brews" und "Nuke All Data" zum schnellen Testen | `doctor.tsx` |
 
-### 8. Ästhetisches und minimalistisches Design
+### 7.8 Ästhetisches und minimalistisches Design
+
+Die UI folgt dem Designkonzept **"Industrial Zen"** — jeder Screen zeigt nur kontextuell relevante Informationen.
 
 | Umsetzung | Datei |
 |---|---|
 | "Industrial Zen"-Farbpalette: Onyx (#0E0E0E), Graphite (#1A1A1A), Espresso-Amber (#D4943A), Bronze (#DBA04D), Sage (#8F9779) | `theme/index.ts` |
-| Custom Typografie: Inter (Regular/SemiBold/Bold) für UI, JetBrains Mono für numerische Werte | `theme/index.ts`, `_layout.tsx` |
-| Jeder Screen zeigt nur das kontextuell Relevante (keine Überladung) | Alle Screens |
-| Dashboard: verdichtete Statistiken in 2×2 Grid + fokussierter Last-Brew-Card | `index.tsx` |
-| Web: Phone-Frame-Container (500px, abgerundete Ecken, Schatten) | `_layout.tsx` |
-| Sparsamer Einsatz von Farbe — Espresso-Amber nur für aktive/wichtige Elemente | Konsequent im Theme |
+| Custom Typografie: Inter (Regular/SemiBold/Bold) für UI-Text, JetBrains Mono für numerische Werte | `theme/index.ts`, `_layout.tsx` |
+| Dashboard: verdichtete Statistiken in 2×2-Grid + fokussierter Last-Brew-Card | `index.tsx` |
+| Web: Phone-Frame-Container (max. 500px, abgerundete Ecken, subtiler Schatten) | `_layout.tsx` |
+| Sparsamer Einsatz der Akzentfarbe Espresso-Amber — nur für aktive/wichtige Elemente | Konsequent im Theme |
 
-### 9. Fehler erkennen, diagnostizieren und beheben
+### 7.9 Fehler erkennen, diagnostizieren und beheben
+
+Fehlermeldungen sind konkret, verständlich und bieten wo möglich Handlungshinweise.
 
 | Umsetzung | Datei |
 |---|---|
-| "Database Initialization Failed" + Fehlernachricht bei DB-Fehler | `_layout.tsx` |
+| "Database Initialization Failed" mit konkretem Fehlertext bei DB-Fehler | `_layout.tsx` |
 | "Error saving brew: [Details]" bei Speicherfehler | `log.tsx` |
 | "Unable to get advice. Please check your API Key and internet connection." | `AIService.ts` |
-| `alert()`-Aufrufe mit konkreten Fehlermeldungen (nicht nur generische Fehler) | Durchgängig |
+| Durchgängig: `alert()`-Aufrufe mit konkreten, kontextbezogenen Fehlermeldungen | Alle relevanten Screens |
 
-### 10. Hilfe und Dokumentation
+### 7.10 Hilfe und Dokumentation
+
+Obwohl die App auf intuitive Bedienbarkeit ausgelegt ist, bietet sie kontextbezogene Hilfestellung.
 
 | Umsetzung | Datei |
 |---|---|
-| KI-Berater (Brew Doctor) gibt kontextbezogene, aktionale Tipps | `doctor.tsx`, `AIService.ts` |
-| Markdown-Rendering der KI-Antworten für strukturierte Darstellung | `doctor.tsx` |
-| Platzhaltertexte als Hilfestellung ("e.g. More sweetness, less acidity...") | `doctor.tsx` |
+| KI-Berater (Brew Doctor) gibt kontextbezogene, aktionale Optimierungsvorschläge | `doctor.tsx`, `AIService.ts` |
+| Markdown-Rendering der KI-Antworten für strukturierte, lesbare Darstellung | `doctor.tsx` |
+| Platzhaltertexte als Orientierungshilfe ("e.g. More sweetness, less acidity...") | `doctor.tsx` |
 | Empty-States mit Handlungsaufforderung ("No brews recorded yet. Start your journey...") | `index.tsx` |
-| Deskriptoren in BodySelector erklären die Optionen ("WATERY", "SYRUPY", etc.) | `BodySelector.tsx` |
+| Sensorische Deskriptoren erklären die Body-Zonen ("WATERY", "SYRUPY", "VELVETY") | `BodySelector.tsx` |
 
 ---
 
-## Installation & Start
+## 8. Installation und Ausführung
 
-### Voraussetzungen
+### 8.1 Voraussetzungen
 
 - Node.js ≥ 18
 - npm oder yarn
-- Expo CLI (optional, `npx expo` funktioniert ebenfalls)
+- Expo CLI (optional — `npx expo` funktioniert ebenfalls)
 
-### Installation
+### 8.2 Installation
 
 ```bash
 cd Coffee-app
 npm install
 ```
 
-### Start
+### 8.3 Starten der Anwendung
 
 ```bash
-# Web
+# Web-Version
 npx expo start --web
 
-# iOS (Simulator oder Gerät)
+# iOS (Simulator oder physisches Gerät)
 npx expo start --ios
 
-# Android (Emulator oder Gerät)
+# Android (Emulator oder physisches Gerät)
 npx expo start --android
 ```

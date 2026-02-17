@@ -37,7 +37,8 @@ export class AIService {
     private model: GenerativeModel;
 
     private constructor() {
-        this.genAI = new GoogleGenerativeAI("AIzaSyC--ZWaNvITabo2ZLvrChErg6v1K-Tye7Y");
+        const apiKey = process.env.EXPO_PUBLIC_GEMINI_API_KEY || '';
+        this.genAI = new GoogleGenerativeAI(apiKey);
         this.model = this.genAI.getGenerativeModel({
             model: "gemini-3-flash-preview",
             systemInstruction: SYSTEM_PROMPT,

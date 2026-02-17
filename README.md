@@ -765,7 +765,22 @@ cd Coffee-app
 npm install
 ```
 
-### 9.3 Starten der Anwendung
+### 9.3 API-Key konfigurieren
+
+Die KI-Beratung (Brew Doctor) benötigt einen Google Gemini API-Key. Der Key ist aus Sicherheitsgründen nicht im Repository enthalten, sondern wird über eine `.env`-Datei konfiguriert.
+
+> **Hinweis für die Abgabe:** Die `.env`-Datei mit dem funktionsfähigen API-Key ist in der abgegebenen ZIP-Datei enthalten. Es ist keine weitere Konfiguration nötig — die App ist nach `npm install` sofort startbereit.
+
+Falls die `.env`-Datei nicht vorhanden ist (z.B. bei einem GitHub-Clone), muss sie manuell angelegt werden:
+
+```bash
+# .env im Projektverzeichnis erstellen
+echo "EXPO_PUBLIC_GEMINI_API_KEY=your_api_key_here" > .env
+```
+
+Einen API-Key kann über die [Google AI Studio](https://aistudio.google.com/apikey) generiert werden. Alle übrigen Funktionen der App (Brew Logging, Stammdaten, Dashboard) funktionieren auch ohne API-Key.
+
+### 9.4 Starten der Anwendung
 
 ```bash
 # Web-Version
@@ -777,3 +792,4 @@ npx expo start --ios
 # Android (Emulator oder physisches Gerät)
 npx expo start --android
 ```
+

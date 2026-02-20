@@ -92,7 +92,6 @@ Coffee-app/
     │   │   ├── BodySelector      # Body-Auswahl (Light / Medium / Heavy)
     │   │   ├── TasteWheel        # SVG-Geschmacksrad (6 Kategorien)
     │   │   ├── SelectionModal    # Bottom-Sheet Auswahl-Modal
-    │   │   ├── ScaleSlider       # Gradient-Slider (0–10)
     │   │   └── Button            # Theme-basierter Button
     │   └── screens/              # Vollbild-Komponenten (Manage-Screens)
     │       ├── ManageCoffeesScreen
@@ -134,7 +133,7 @@ Coffee-app/
 | FA4 | Funktional | **Brühverlauf** — Chronologische Anzeige aller gespeicherten Brühvorgänge mit Detail-Modal und Löschfunktion (Swipe-to-Delete). Umgesetzt in `history.tsx`. |
 | FA5 | Funktional | **KI-basierte Brühberatung** — Analyse eines ausgewählten Brühvorgangs durch Gemini-KI inklusive frei formulierbarer Zielstellung. Antwort in strukturiertem Format: Diagnose → Anpassungen (max. 3) → Erwartetes Ergebnis. Umgesetzt in `doctor.tsx` und `AIService`. |
 | FA6 | Funktional | **Shot-Timer** — Integrierter Timer mit Start-, Stop- und Reset-Funktion bei 0,1-Sekunden-Genauigkeit. Die gestoppte Zeit wird automatisch in das Rezeptfeld übernommen. Umgesetzt in `log.tsx`. |
-| FA7 | Funktional | **Geschmacksprofil-Erfassung** — Mehrdimensionale sensorische Bewertung: Body-Auswahl über 3 Zonen (Light/Medium/Heavy), Acidity- und Bitterness-Slider (0–10), sowie Taste Wheel mit 6 Kategorien und Sub-Notes. Umgesetzt durch `BodySelector`, `ScaleSlider` und `TasteWheel`. |
+| FA7 | Funktional | **Geschmacksprofil-Erfassung** — Mehrdimensionale sensorische Bewertung: Body-Auswahl über 3 Zonen (Light/Medium/Heavy) sowie Taste Wheel mit 6 Kategorien und Sub-Notes. Umgesetzt durch `BodySelector` und `TasteWheel`. |
 | FA8 | Funktional | **Dashboard mit Statistiken** — Übersichtsseite mit Kennzahlen (Beans Stashed, Days Since Last Brew, Total Brews, Top Coffee) und detaillierter Last-Brew-Karte. Umgesetzt in `index.tsx`. |
 
 ### 4.2 Nicht-funktionale Anforderungen
@@ -258,7 +257,7 @@ class SyntheticDataFactory {
 
 ### 6.1 Klassendiagramm
 
-Das Klassendiagramm zeigt alle relevanten Klassen und Interfaces der Anwendung mit ihren Beziehungen. Die Entities (`Coffee`, `Grinder`, `BrewLog`, `Score`) sind als Interfaces modelliert, die Services als Singletons, und die Repositories als datenzugriffsschicht.
+Das Klassendiagramm zeigt alle relevanten Klassen und Interfaces der Anwendung mit ihren Beziehungen. Die Entities (`Coffee`, `Grinder`, `BrewLog`, `Score`) sind als Interfaces modelliert, die Services als Singletons, und die Repositories als Datenzugriffsschicht.
 
 ```mermaid
 classDiagram
@@ -307,6 +306,23 @@ classDiagram
         +score: Score
     }
 
+    class BrewLogRow {
+        <<interface>>
+        +id: number
+        +coffee_id: number
+        +grinder_id: number
+        +date: string
+        +dose_in: number
+        +dose_out: number
+        +time_seconds: number
+        +temperature: number | null
+        +grind_setting: string | null
+        +rating_body: number
+        +rating_acidity: number
+        +rating_bitterness: number
+        +taste_notes: string | null
+    }
+
     class DBInterface {
         <<interface>>
         +getAllAsync(sql, params): Promise~T[]~
@@ -316,6 +332,7 @@ classDiagram
     }
 
     class WebDatabaseAdapter {
+        -getTableName(sql): string | null
         -getData(table): any[]
         -saveData(table, data)
         -getLastId(table): number
@@ -359,6 +376,7 @@ classDiagram
 
     class BrewBuilder {
         -brew: Partial~BrewLog~
+        +constructor()
         +setEquipment(coffeeId, grinderId): BrewBuilder
         +setRecipe(doseIn, doseOut, timeSeconds, temp?): BrewBuilder
         +setGrindSetting(setting): BrewBuilder
@@ -389,6 +407,10 @@ classDiagram
     }
 
     class SyntheticDataFactory {
+        -grinderRepo: GrinderRepository
+        -coffeeRepo: CoffeeRepository
+        -brewRepo: BrewRepository
+        +constructor()
         +generateEssentialData(): Promise~void~
         -createGrinder(): Promise~number~
         -createCoffee(): Promise~number~
@@ -406,6 +428,7 @@ classDiagram
     CoffeeRepository --> DatabaseService : nutzt
     GrinderRepository --> DatabaseService : nutzt
     BrewRepository --> DatabaseService : nutzt
+    BrewRepository --> BrewLogRow : mappt intern
 
     BrewBuilder --> BrewLog : erzeugt
     AIService --> AdviceContext : nutzt
@@ -439,8 +462,12 @@ graph TB
             BodySel["BodySelector"]
             TasteW["TasteWheel"]
             SelModal["SelectionModal"]
-            ScaleS["ScaleSlider"]
             Btn["Button"]
+        end
+
+        subgraph ManageScreens["Manage-Screens"]
+            ManageCoffees["ManageCoffeesScreen"]
+            ManageGrinders["ManageGrindersScreen"]
         end
 
         Theme["theme/index.ts<br/>(Restyle Theme)"]
@@ -469,6 +496,10 @@ graph TB
         BrewRepo["BrewRepository"]
     end
 
+    subgraph Utils["Utilities"]
+        MockData["mockData.ts<br/>(generateMockData)"]
+    end
+
     subgraph External["Externe Systeme"]
         SQLite["expo-sqlite<br/>(Native)"]
         LocalStorage["localStorage<br/>(Web)"]
@@ -479,10 +510,18 @@ graph TB
     TabLayout --> Screens
     Screens --> Components
     Screens --> Theme
+    Coffees --> ManageCoffees
+    Grinders --> ManageGrinders
 
     Log --> Builder
+    Log --> SelModal
+    Log --> GrindSel
+    Log --> BodySel
+    Log --> TasteW
     Doctor --> AIServ
+    Doctor --> MockData
     Screens --> Data
+    MockData --> Data
 
     Data --> DBService
     DBService --> SQLite
@@ -496,9 +535,11 @@ Das Aktivitätsdiagramm modelliert den vollständigen Ablauf eines Brew-Logging-
 
 ```mermaid
 flowchart TD
-    Start([Brew Logger öffnen]) --> SelectEquipment[Kaffee und Mühle auswählen<br/>via SelectionModal]
-    SelectEquipment --> EnterRecipe[Rezeptdaten eingeben<br/>Dose In, Dose Out, Temperatur, Mahlgrad]
-    EnterRecipe --> Timer{Shot-Timer<br/>verwenden?}
+    Start([Brew Logger öffnen]) --> LoadData["Stammdaten laden<br/>(CoffeeRepository + GrinderRepository)"]
+    LoadData --> SelectEquipment[Kaffee und Mühle auswählen<br/>via SelectionModal]
+    SelectEquipment --> EnterRecipe[Rezeptdaten eingeben<br/>Dose In, Dose Out, Temperatur]
+    EnterRecipe --> GrindSelect[Mahlgrad einstellen<br/>via GrindSelector]
+    GrindSelect --> Timer{Shot-Timer<br/>verwenden?}
     
     Timer -->|Ja| StartTimer[Timer starten]
     StartTimer --> StopTimer[Timer stoppen]
@@ -508,17 +549,17 @@ flowchart TD
     Timer -->|Nein| ManualTime[Zeit manuell eingeben]
     ManualTime --> TasteProfile
 
-    TasteProfile[Geschmacksprofil erfassen<br/>BodySelector + ScaleSlider + TasteWheel]
+    TasteProfile[Geschmacksprofil erfassen<br/>BodySelector + TasteWheel]
     TasteProfile --> Save[Speichern drücken]
     
     Save --> ValidateEquipment{Coffee und Grinder<br/>ausgewählt?}
-    ValidateEquipment -->|Nein| ShowWarning[Warnung: Bitte Equipment<br/>auswählen]
+    ValidateEquipment -->|Nein| ShowWarning["Warnung: 'Please select<br/>Coffee and Grinder'"]
     ShowWarning --> SelectEquipment
 
     ValidateEquipment -->|Ja| BuildBrew["BrewBuilder.build()<br/>Pflichtfelder validieren"]
     BuildBrew --> Persist["BrewRepository.create()<br/>In Datenbank speichern"]
     Persist --> Confirm["Bestätigung: 'Brew Logged!'"]
-    Confirm --> Navigate[Navigation zurück<br/>zum Dashboard]
+    Confirm --> Navigate["Navigation zurück<br/>via router.back()"]
 ```
 
 ### 6.4 Sequenzdiagramm — KI-Brühberatung
@@ -535,20 +576,31 @@ sequenceDiagram
     participant GrinderRepo as GrinderRepository
     participant Gemini as Gemini API
 
+    Note over User,Doctor: Screen-Fokus löst Datenladung aus
+    Doctor->>BrewRepo: getAll()
+    BrewRepo-->>Doctor: BrewLog[]
+    Doctor->>Doctor: Neuester Brew als selectedBrew setzen
+
+    Doctor->>CoffeeRepo: getAll()
+    CoffeeRepo-->>Doctor: Coffee[]
+    Doctor->>Doctor: Coffee-Map aufbauen (Record~number,Coffee~)
+
+    Doctor->>GrinderRepo: getAll()
+    GrinderRepo-->>Doctor: Grinder[]
+    Doctor->>Doctor: Grinder-Map aufbauen (Record~number,Grinder~)
+
+    User->>Doctor: Optional: Brew auswählen (Modal)
+    User->>Doctor: Optional: Ziel formulieren (TextInput)
     User->>Doctor: "Get AI Advice" drücken
     activate Doctor
     Doctor->>Doctor: CoffeeLoadingAnimation starten<br/>(Cup-Filling-Animation + zyklische Nachrichten)
 
     Doctor->>BrewRepo: getAll()
-    BrewRepo-->>Doctor: BrewLog[]
+    BrewRepo-->>Doctor: BrewLog[] (History)
 
-    Doctor->>CoffeeRepo: getAll()
-    CoffeeRepo-->>Doctor: Coffee[]
+    Doctor->>Doctor: AdviceContext aufbauen<br/>(coffee, grinder, allCoffees, allGrinders)
 
-    Doctor->>GrinderRepo: getAll()
-    GrinderRepo-->>Doctor: Grinder[]
-
-    Doctor->>AIService: getAdvice(currentBrew, history, goal, context)
+    Doctor->>AIService: getAdvice(selectedBrew, history, goal, context)
     activate AIService
 
     AIService->>AIService: formatBrewSummary()<br/>Prompt mit Brew-Daten aufbauen

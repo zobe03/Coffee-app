@@ -76,7 +76,7 @@ Coffee-app/
 ├── app/                          # Navigation Layer (Expo Router)
 │   ├── _layout.tsx               # Root-Layout: DB-Init, Font-Loading, Web-Container
 │   └── (tabs)/
-│       ├── _layout.tsx           # Tab-Navigator (7 Tabs)
+│       ├── _layout.tsx           # Tab-Navigator (6 Tabs)
 │       ├── index.tsx             # Home / Dashboard
 │       ├── log.tsx               # Brew Logger
 │       ├── history.tsx           # Brühverlauf
@@ -316,6 +316,7 @@ classDiagram
     }
 
     class WebDatabaseAdapter {
+        -getTableName(sql): string|null
         -getData(table): any[]
         -saveData(table, data)
         -getLastId(table): number
@@ -389,6 +390,10 @@ classDiagram
     }
 
     class SyntheticDataFactory {
+        -grinderRepo: GrinderRepository
+        -coffeeRepo: CoffeeRepository
+        -brewRepo: BrewRepository
+        +constructor()
         +generateEssentialData(): Promise~void~
         -createGrinder(): Promise~number~
         -createCoffee(): Promise~number~
@@ -621,7 +626,7 @@ Ein globales Theme-System stellt sicher, dass alle UI-Elemente einheitlich gesta
 | Zentrales Theme mit Farben, Spacing, Font-Familien und Text-Varianten | `theme/index.ts` |
 | Einheitliche Kartenstile (`cardPrimaryBackground`, `borderRadius`) auf allen Screens | Alle Screens |
 | Konsistente Modale (Dark-Theme, Animationsart `slide`) | `SelectionModal`, Manage-Screens |
-| Tab-Icons aus einheitlicher Icon-Familie (MaterialCommunityIcons) | `(tabs)/_layout.tsx` |
+| Tab-Icons aus konsistenter Icon-Familie (MaterialCommunityIcons, MaterialIcons) | `(tabs)/_layout.tsx` |
 | Swipe-to-Delete identisch auf Coffees und Grinders implementiert | `ManageCoffeesScreen`, `ManageGrindersScreen` |
 
 ### 7.5 Fehlervermeidung

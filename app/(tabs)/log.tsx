@@ -4,6 +4,7 @@ import { Box, Text, useTheme } from '../../src/presentation/theme';
 import { Stack, useRouter, useFocusEffect } from 'expo-router';
 import { Button } from '../../src/presentation/components/Button';
 import { BodySelector } from '../../src/presentation/components/BodySelector';
+import { ScaleSlider } from '../../src/presentation/components/ScaleSlider';
 import { TasteWheel } from '../../src/presentation/components/TasteWheel';
 import { SelectionModal } from '../../src/presentation/components/SelectionModal';
 import { BrewBuilder } from '../../src/domain/builders/BrewBuilder';
@@ -218,6 +219,21 @@ export default function BrewLogScreen() {
                     <BodySelector value={body} onChange={setBody} />
 
                     <Box height={20} />
+
+                    <ScaleSlider
+                        label="ACIDITY"
+                        value={acidity}
+                        onChange={setAcidity}
+                        gradientColors={['#90EE90', '#FFFF00', '#FFA500']}
+                    />
+
+                    <ScaleSlider
+                        label="BITTERNESS"
+                        value={bitterness}
+                        onChange={setBitterness}
+                        gradientColors={['#D4A574', '#8B4513', '#2F1A0E']}
+                    />
+
                     <TasteWheel selectedNotes={tasteNotes} onNotesChange={setTasteNotes} />
                 </Box>
 

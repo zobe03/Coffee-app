@@ -502,7 +502,7 @@ Das Aktivitätsdiagramm modelliert den vollständigen Ablauf eines Brew-Logging-
 ```mermaid
 flowchart TD
     Start([Brew Logger öffnen]) --> SelectEquipment[Kaffee und Mühle auswählen<br/>via SelectionModal]
-    SelectEquipment --> EnterRecipe[Rezeptdaten eingeben<br/>Dose In, Dose Out, Temperatur, Mahlgrad]
+    SelectEquipment --> EnterRecipe[Rezeptdaten eingeben<br/>Dose In, Dose Out, Time, Temperatur, Mahlgrad]
     EnterRecipe --> Timer{Shot-Timer<br/>verwenden?}
     
     Timer -->|Ja| StartTimer[Timer starten]
